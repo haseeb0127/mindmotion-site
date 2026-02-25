@@ -44,7 +44,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-
+function updateConsole(msg) {
+    const consoleBox = document.querySelector('#engine-console');
+    consoleBox.innerHTML += `> ${msg}<br>`;
+    consoleBox.scrollTop = consoleBox.scrollHeight;
+}
     async function pollStatus(jobId) {
         let progress = 10;
 
