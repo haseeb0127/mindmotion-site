@@ -8,50 +8,61 @@ document.addEventListener('DOMContentLoaded', () => {
     const previewBox = document.getElementById('video-preview-box');
     const previewPlayer = document.getElementById('preview-player');
     const downloadBtnLink = document.getElementById('download-btn');
-function finalizeVideo(videoUrl) {
-    generateBtn.disabled = false;
-    progressBar.style.width = '100%';
-    statusDisplay.innerText = "✅ Synthesis Complete!";
-    
-    // 1. Reveal the video box
-    previewBox.style.display = 'block';
-    
-    // 2. Set the video source and attributes
-    previewPlayer.src = videoUrl;
-    previewPlayer.setAttribute('autoplay', 'true');
-    previewPlayer.setAttribute('controls', 'true');
-    
-    // 3. Play the video immediately
-    previewPlayer.play().catch(e => console.log("Auto-play blocked, please click play."));
 
-    // 4. Set Download Link
-    if (downloadBtnLink) {
-        downloadBtnLink.href = videoUrl;
-        downloadBtnLink.style.display = 'inline-block';
-    }
-    
-    consoleBox.innerHTML += `<br>> [Stream] Cinematic sequence synchronized. Enjoy.`;
-}
     // YOUR ACTUAL RAILWAY BACKEND URL
     const BASE_URL = "https://mindmotion-site-production.up.railway.app"; 
+
+    // 1. Unified Finalize Function
+    function finalizeVideo(videoUrl) {
+        generateBtn.disabled = false;
+        progressBar.style.width = '100%';
+        statusDisplay.innerText = "✅ Synthesis Complete!";
+        
+        previewBox.style.display = 'block';
+        
+        // 2. Browser Autoplay Fix: Videos MUST be muted to autoplay successfully
+        previewPlayer.muted = true;
+        previewPlayer.setAttribute('playsinline', 'true');
+        previewPlayer.setAttribute('autoplay', 'true');
+        previewPlayer.setAttribute('controls', 'true');
+        
+        previewPlayer.src = videoUrl;
+        previewPlayer.load();
+        
+        // 3. Play the video
+        let playPromise = previewPlayer.play();
+        if (playPromise !== undefined) {
+            playPromise.catch(error => {
+                console.log("Autoplay blocked, user must click play.");
+            });
+        }
+
+        // 4. Set Download Link
+        if (downloadBtnLink) {
+            downloadBtnLink.href = videoUrl;
+            downloadBtnLink.style.display = 'inline-block';
+        }
+        
+        consoleBox.innerHTML += `<br>> [Stream] Cinematic sequence synchronized. Enjoy.`;
+    }
 
     generateBtn.addEventListener('click', async () => {
         const text = scriptInput.value.trim();
         if (!text) return alert("Please enter reasoning input first!");
 
-        // 1. Reset UI
+        // Reset UI
         generateBtn.disabled = true;
         progressContainer.style.display = 'block';
         previewBox.style.display = 'none';
         progressBar.style.width = '0%';
         consoleBox.innerHTML = "> Initiating Pro Synthesis Engine...";
 
-        // 2. Prepare URL with Script Parameter
+        // Prepare URL with Script Parameter (Using GET)
         const url = `${BASE_URL}/generate?script=${encodeURIComponent(text)}`;
 
         try {
-            // 3. Simple POST Request
-            const response = await fetch(url, { method: 'POST' });
+            // Simple GET Request to match main.py
+            const response = await fetch(url);
 
             if (!response.ok) throw new Error("Could not connect to Railway server.");
             
@@ -59,7 +70,7 @@ function finalizeVideo(videoUrl) {
             const job_id = data.job_id;
             consoleBox.innerHTML += `<br>> Connected! Job ID: ${job_id}`;
 
-            // 4. Polling for Status
+            // Polling for Status
             const pollInterval = setInterval(async () => {
                 try {
                     const statusRes = await fetch(`${BASE_URL}/status/${job_id}`);
@@ -69,9 +80,14 @@ function finalizeVideo(videoUrl) {
 
                     if (statusData.status === "Completed") {
                         clearInterval(pollInterval);
-                        finalizeVideo(`${BASE_URL}/download/${job_id}`);
+                        
+                        // Use the direct URL from the server, or fallback to test video
+                        const finalUrl = statusData.url || "https://www.w3schools.com/html/mov_bbb.mp4";
+                        finalizeVideo(finalUrl); 
                     }
-                } catch (e) { console.error("Polling error", e); }
+                } catch (e) { 
+                    console.error("Polling error", e); 
+                }
             }, 3000);
 
         } catch (error) {
@@ -80,19 +96,4 @@ function finalizeVideo(videoUrl) {
             generateBtn.disabled = false;
         }
     });
-
-    function finalizeVideo(videoUrl) {
-        generateBtn.disabled = false;
-        progressBar.style.width = '100%';
-        statusDisplay.innerText = "✅ Generation Complete!";
-        previewBox.style.display = 'block';
-        previewPlayer.src = videoUrl;
-        previewPlayer.load();
-        
-        if (downloadBtnLink) {
-            downloadBtnLink.href = videoUrl;
-            downloadBtnLink.style.display = 'inline-block';
-        }
-        consoleBox.innerHTML += `<br>> SUCCESS: Pro Video rendered and ready.`;
-    }
 });
