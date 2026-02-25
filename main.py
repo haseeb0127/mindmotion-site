@@ -7,7 +7,8 @@ from pydantic import BaseModel
 
 app = FastAPI()
 
-# THE HANDSHAKE: This allows your GitHub site to talk to Railway
+# 1. THE HANDSHAKE (CORS)
+# This is vital so your website can talk to this Railway server
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"], 
@@ -15,7 +16,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Storage to track the status of each rendering job
+# This dictionary stores the status of your video jobs
 jobs = {}
 
 class VideoRequest(BaseModel):
@@ -31,17 +32,17 @@ async def process_chunk(chunk_id, text, format):
 
 async def generate_30_min_video(job_id: str, request: VideoRequest):
     # 1. THE SLICER
-    jobs[job_id] = "Slicing script into 1-minute chunks..."
+    jobs[job_id] = "Slicing script into chunks..."
     words = request.script.split()
     chunks = [words[i:i + 150] for i in range(0, len(words), 150)] 
     
     # 2. THE SWARM
-    jobs[job_id] = f"Swarm Rendering: {len(chunks)} parts in progress..."
+    jobs[job_id] = f"Swarm Rendering {len(chunks)} parts..."
     tasks = [process_chunk(i, " ".join(c), request.format) for i, c in enumerate(chunks)]
     await asyncio.gather(*tasks)
     
     # 3. THE STITCHER
-    jobs[job_id] = "Stitching parts & adding MindMotion watermark..."
+    jobs[job_id] = "Branding & Stitching..."
     await asyncio.sleep(2)
     
     jobs[job_id] = "Completed"
@@ -49,7 +50,7 @@ async def generate_30_min_video(job_id: str, request: VideoRequest):
 
 @app.post("/generate")
 async def start_engine(request: VideoRequest, background_tasks: BackgroundTasks):
-    job_id = str(uuid.uuid4()) # Unique Ticket Number
+    job_id = str(uuid.uuid4()) # Unique ticket number for tracking
     jobs[job_id] = "Queued"
     
     background_tasks.add_task(generate_30_min_video, job_id, request)
