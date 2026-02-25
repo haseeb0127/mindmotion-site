@@ -7,8 +7,7 @@ from pydantic import BaseModel
 
 app = FastAPI()
 
-# 1. THE HANDSHAKE (CORS)
-# This is required so your browser allows the website to talk to Railway
+# THE HANDSHAKE: This allows your GitHub site to talk to Railway
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"], 
@@ -16,7 +15,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Dictionary to store the status of each video rendering job
+# Storage to track the status of each rendering job
 jobs = {}
 
 class VideoRequest(BaseModel):
@@ -25,25 +24,24 @@ class VideoRequest(BaseModel):
     brand_name: str = "MindMotion.app"
 
 async def process_chunk(chunk_id, text, format):
-    """Simulates a cloud GPU rendering one small part of the 30-minute video"""
+    """Simulates a cloud GPU rendering one small part"""
     print(f"⚡ Rendering Chunk {chunk_id} in {format}...")
-    await asyncio.sleep(2) # Real rendering logic goes here
+    await asyncio.sleep(2) 
     return f"chunk_{chunk_id}.mp4"
 
 async def generate_30_min_video(job_id: str, request: VideoRequest):
     # 1. THE SLICER
-    jobs[job_id] = "Slicing Script into chunks..."
+    jobs[job_id] = "Slicing script into 1-minute chunks..."
     words = request.script.split()
     chunks = [words[i:i + 150] for i in range(0, len(words), 150)] 
     
     # 2. THE SWARM
-    jobs[job_id] = f"Swarm Rendering {len(chunks)} parts..."
+    jobs[job_id] = f"Swarm Rendering: {len(chunks)} parts in progress..."
     tasks = [process_chunk(i, " ".join(c), request.format) for i, c in enumerate(chunks)]
-    rendered_files = await asyncio.gather(*tasks)
+    await asyncio.gather(*tasks)
     
     # 3. THE STITCHER
-    jobs[job_id] = "Branding & Stitching..."
-    print(f"🎬 Merging {len(rendered_files)} parts with {request.brand_name}...")
+    jobs[job_id] = "Stitching parts & adding MindMotion watermark..."
     await asyncio.sleep(2)
     
     jobs[job_id] = "Completed"
@@ -51,7 +49,7 @@ async def generate_30_min_video(job_id: str, request: VideoRequest):
 
 @app.post("/generate")
 async def start_engine(request: VideoRequest, background_tasks: BackgroundTasks):
-    job_id = str(uuid.uuid4())
+    job_id = str(uuid.uuid4()) # Unique Ticket Number
     jobs[job_id] = "Queued"
     
     background_tasks.add_task(generate_30_min_video, job_id, request)
