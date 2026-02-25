@@ -12,7 +12,7 @@
         <h1>MindMotion AI</h1>
         <p>Generate high-speed branded videos using the Swarm Engine.</p>
 
-        <textarea id="script-input" placeholder="Paste your MA Psychology notes or 30-min script here..."></textarea>
+        <textarea id="script-input" placeholder="Paste your MA Psychology notes or script here..."></textarea>
 
         <div class="controls">
             <select id="format-selector">
@@ -40,7 +40,15 @@
             <p id="status-display">System Ready. Waiting for script...</p>
         </div>
 
-        <div id="engine-console" style="background: #1e1e1e; color: #00ff00; padding: 15px; font-family: monospace; height: 120px; overflow-y: auto; border-radius: 5px; margin-top: 20px; font-size: 12px; text-align: left; line-height: 1.5; border-left: 4px solid #008080;">
+        <div id="share-hub" style="display: none; margin-top: 15px; text-align: center; border-top: 1px solid #eee; padding-top: 15px;">
+            <p style="font-size: 14px; color: #555; margin-bottom: 10px;">📢 Share your Psychology Insight:</p>
+            <div class="share-buttons">
+                <a id="share-whatsapp" href="#" target="_blank" style="padding: 10px 15px; background: #25D366; color: white; border-radius: 5px; text-decoration: none; margin: 5px; display: inline-block; font-size: 12px; font-weight: bold;">WhatsApp</a>
+                <a id="share-twitter" href="#" target="_blank" style="padding: 10px 15px; background: #1DA1F2; color: white; border-radius: 5px; text-decoration: none; margin: 5px; display: inline-block; font-size: 12px; font-weight: bold;">Twitter/X</a>
+            </div>
+        </div>
+
+        <div id="engine-console" style="background: #1e1e1e; color: #00ff00; padding: 15px; font-family: monospace; height: 120px; overflow-y: auto; border-radius: 5px; margin-top: 20px; font-size: 11px; text-align: left; line-height: 1.5; border-left: 4px solid #008080;">
             > Initializing MindMotion Console...<br>
             > Swarm Engine Standby...
         </div>
