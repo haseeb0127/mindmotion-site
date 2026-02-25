@@ -1,4 +1,3 @@
-// Replace this with your actual Railway URL if it changes
 const BACKEND_URL = "https://mindmotion-site-production.up.railway.app";
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -7,6 +6,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const scriptInput = document.querySelector('#script-input');
     const progressBar = document.querySelector('#progress-bar');
     const progressContainer = document.querySelector('#progress-container');
+
+    // 1. CONSOLE UPDATER
+    function updateConsole(msg) {
+        const consoleBox = document.querySelector('#engine-console');
+        if (consoleBox) {
+            const time = new Date().toLocaleTimeString([], { hour12: false });
+            consoleBox.innerHTML += `> [${time}] ${msg}<br>`;
+            consoleBox.scrollTop = consoleBox.scrollHeight;
+        }
+    }
 
     if (generateBtn) {
         generateBtn.addEventListener('click', async () => {
@@ -18,14 +27,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // 1. Initial UI Setup
+            // UI Reset
             statusText.innerText = "🚀 Connecting to Swarm...";
+            updateConsole("Handshaking with Railway Cluster...");
             generateBtn.disabled = true;
             progressContainer.style.display = "block";
             progressBar.style.width = "5%";
 
             try {
-                // 2. Send the "Generate" Command
+                // 2. TRIGGER GENERATION
                 const response = await fetch(`${BACKEND_URL}/generate`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -35,29 +45,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await response.json();
                 
                 if (data.job_id) {
-                    // 3. Start watching the progress
+                    updateConsole(`Job ID Created: ${data.job_id}`);
                     pollStatus(data.job_id);
                 }
             } catch (error) {
-                statusText.innerText = "❌ Connection Error. Is the Railway Engine running?";
+                statusText.innerText = "❌ Connection Error. Is Railway awake?";
+                updateConsole("ERROR: Failed to reach the Swarm engine.");
                 generateBtn.disabled = false;
             }
         });
     }
-function updateConsole(msg) {
-    const consoleBox = document.querySelector('#engine-console');
-    consoleBox.innerHTML += `> ${msg}<br>`;
-    consoleBox.scrollTop = consoleBox.scrollHeight;
-}
+
+    // 3. STATUS POLLING
     async function pollStatus(jobId) {
         let progress = 10;
+        let lastStatus = "";
 
         const interval = setInterval(async () => {
             try {
                 const res = await fetch(`${BACKEND_URL}/status/${jobId}`);
                 const data = await res.json();
 
-                // Logic to move the bar based on the backend status
+                // Console logging for status changes
+                if (data.status !== lastStatus) {
+                    updateConsole(`System Update: ${data.status}`);
+                    lastStatus = data.status;
+                }
+
+                // Bar movement logic
                 if (data.status.includes("Slicing")) {
                     progress = 25;
                 } else if (data.status.includes("Rendering")) {
@@ -68,8 +83,27 @@ function updateConsole(msg) {
                     progress = 100;
                     clearInterval(interval);
                     
-                    // Reveal Final Download Button
+                    // THE FINAL DOWNLOAD LINK
                     statusText.innerHTML = `
                         <div style="color: #008080; font-weight: bold; margin-top: 10px;">
                             ✅ Video Ready for Social Media! <br>
-                            <a href="#" class="download-btn" style="display:inline-block; margin-top:10
+                            <a href="${BACKEND_URL}/download/${jobId}" class="download-btn" target="_blank" style="display:inline-block; margin-top:10px; background:#008080; color:white; padding:10px 20px; text-decoration:none; border-radius:5px;">
+                                📥 Download Branded Video
+                            </a>
+                        </div>
+                    `;
+                    updateConsole("SUCCESS: All chunks merged and branded.");
+                    generateBtn.disabled = false;
+                }
+
+                progressBar.style.width = progress + "%";
+                if (data.status !== "Completed") {
+                    statusText.innerText = "📊 " + data.status;
+                }
+
+            } catch (err) {
+                console.log("Checking status...");
+            }
+        }, 2000); 
+    }
+});
