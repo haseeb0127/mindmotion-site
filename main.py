@@ -1,4 +1,7 @@
-import os
+@app.get("/")
+async def root()
+return {"message": "MindMotion Engine is Online and Ready!}
+         import os
 import asyncio
 import uuid
 from fastapi import FastAPI, BackgroundTasks
