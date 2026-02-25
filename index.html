@@ -20,7 +20,6 @@
                 <option value="9:16">Reels/TikTok (9:16)</option>
                 <option value="1:1">Instagram (1:1)</option>
             </select>
-
             <button id="generate-btn">Generate Branded Video</button>
         </div>
 
@@ -30,9 +29,8 @@
 
         <div id="video-preview-box" style="display:none; margin-top: 20px; text-align: center;">
             <h3 style="color: #008080;">🎬 Instant Preview</h3>
-            <video id="preview-player" width="100%" controls style="border-radius: 10px; border: 3px solid #008080; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+            <video id="preview-player" width="100%" controls style="border-radius: 10px; border: 3px solid #008080;">
                 <source src="" type="video/mp4">
-                Your browser does not support the video tag.
             </video>
         </div>
 
@@ -49,9 +47,18 @@
             </div>
         </div>
 
-        <div id="engine-console" style="background: #1e1e1e; color: #00ff00; padding: 15px; font-family: monospace; height: 120px; overflow-y: auto; border-radius: 5px; margin-top: 20px; font-size: 11px; text-align: left; line-height: 1.5; border-left: 4px solid #008080;">
+        <div id="engine-console" style="background: #1e1e1e; color: #00ff00; padding: 15px; font-family: monospace; height: 100px; overflow-y: auto; border-radius: 5px; margin-top: 20px; font-size: 11px; text-align: left;">
             > Initializing MindMotion Console...<br>
             > Swarm Engine Standby...
+        </div>
+
+        <div id="history-container" style="margin-top: 25px; text-align: left; border-top: 2px dashed #ddd; padding-top: 15px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h4 style="font-size: 13px; color: #333; margin: 0;">📜 Recent Videos</h4>
+                <button id="clear-history" style="font-size: 10px; background: none; border: 1px solid #ff4d4d; color: #ff4d4d; cursor: pointer; border-radius: 3px; padding: 2px 5px;">Clear All</button>
+            </div>
+            <ul id="history-list" style="list-style: none; padding: 0; margin-top: 10px;">
+                </ul>
         </div>
     </div>
 
