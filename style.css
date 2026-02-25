@@ -1,40 +1,114 @@
-.cinematic-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    background: #f8fafc !important;
-    border: 1px solid #008080 !important;
-}
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. UI Element Selectors
+    const generateBtn = document.getElementById('generate-btn');
+    const scriptInput = document.getElementById('script-input');
+    const progressBar = document.getElementById('progress-bar');
+    const progressContainer = document.getElementById('progress-container');
+    const statusDisplay = document.getElementById('status-display');
+    const consoleBox = document.getElementById('engine-console');
+    const previewBox = document.getElementById('video-preview-box');
+    const previewPlayer = document.getElementById('preview-player');
+    const downloadBtnContainer = document.getElementById('download-btn'); // Selector for the download link
 
-.control-row {
-    display: flex;
-    gap: 10px;
-}
+    // YOUR ACTUAL RAILWAY BACKEND URL
+    const BASE_URL = "https://mindmotion-site-production.up.railway.app"; 
 
-.control-item {
-    flex: 1;
-    text-align: left;
-}
+    const proLogs = [
+        "> [Gemini 3 Pro] Analyzing scene logic...",
+        "> [Search Grounding] Verifying visual fact-checks...",
+        "> [GemPix 2] Diffusing 4K visual nodes...",
+        "> [Nano Banana] Ensuring character consistency...",
+        "> [Veo 3] Animating temporal motion paths...",
+        "> [SynthID] Applying digital watermark...",
+        "> [Final] Synthesis Complete."
+    ];
 
-.control-item label {
-    font-size: 10px;
-    text-transform: uppercase;
-    color: #64748b;
-    margin-bottom: 3px;
-    display: block;
-}
+    // 2. Main Generate Function
+    generateBtn.addEventListener('click', async () => {
+        const text = scriptInput.value.trim();
+        const format = "16:9"; 
+        const cameraAngle = document.getElementById('camera-angle').value;
 
-.reasoning-console {
-    background: #000 !important;
-    color: #00d4ff !important; /* Cyan for reasoning logs */
-    border-left: 4px solid #00d4ff !important;
-}
+        if (!text) {
+            alert("Please enter reasoning input first!");
+            return;
+        }
 
-.label-pro {
-    display: block;
-    text-align: left;
-    font-size: 12px;
-    font-weight: bold;
-    color: #008080;
-    margin-bottom: 5px;
-}
+        // Reset UI
+        generateBtn.disabled = true;
+        progressContainer.style.display = 'block';
+        previewBox.style.display = 'none';
+        downloadBtnContainer.style.display = 'none'; // Hide download until ready
+        consoleBox.innerHTML = "> Initiating DeepMind Pro Workflow...";
+
+        let logIndex = 0;
+        const progressInterval = setInterval(() => {
+            if (logIndex < proLogs.length) {
+                statusDisplay.innerText = proLogs[logIndex].replace('> ', '');
+                consoleBox.innerHTML += `<br>${proLogs[logIndex]}`;
+                consoleBox.scrollTop = consoleBox.scrollHeight;
+                
+                let progress = ((logIndex + 1) / proLogs.length) * 90;
+                progressBar.style.width = `${progress}%`;
+                logIndex++;
+            }
+        }, 1200);
+
+        try {
+            const response = await fetch(`${BASE_URL}/generate`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    script: text,
+                    format: format,
+                    character_lock: "guard_hq" 
+                })
+            });
+
+            if (!response.ok) throw new Error("Could not connect to Railway server.");
+            
+            const { job_id } = await response.json();
+            consoleBox.innerHTML += `<br>> Job ID Received: ${job_id}`;
+
+            const pollInterval = setInterval(async () => {
+                try {
+                    const statusRes = await fetch(`${BASE_URL}/status/${job_id}`);
+                    const { status } = await statusRes.json();
+
+                    if (status === "Completed") {
+                        clearInterval(pollInterval);
+                        clearInterval(progressInterval);
+                        progressBar.style.width = '100%';
+                        
+                        const videoUrl = `${BASE_URL}/download/${job_id}`;
+                        finalizeVideo(videoUrl);
+                    }
+                } catch (e) { console.error(e); }
+            }, 3000);
+
+        } catch (error) {
+            clearInterval(progressInterval);
+            consoleBox.innerHTML += `<br><span style="color:red">> Error: ${error.message}</span>`;
+            statusDisplay.innerText = "❌ Generation Failed";
+            generateBtn.disabled = false;
+        }
+    });
+
+    // 3. Finalize and enable download
+    function finalizeVideo(videoUrl) {
+        generateBtn.disabled = false;
+        statusDisplay.innerText = "✅ 4K Pro Video Rendered";
+        previewBox.style.display = 'block';
+        
+        // Load video into player
+        previewPlayer.src = videoUrl;
+        previewPlayer.load();
+
+        // Update Download Link
+        downloadBtnContainer.href = videoUrl;
+        downloadBtnContainer.style.display = 'inline-block'; // Show the green button
+        
+        consoleBox.innerHTML += `<br>> SUCCESS: Pro Video rendered and ready for download.`;
+        consoleBox.scrollTop = consoleBox.scrollHeight;
+    }
+});
