@@ -7,8 +7,8 @@ from pydantic import BaseModel
 
 app = FastAPI()
 
-# 1. THE HANDSHAKE (CORS)
-# This allows your GitHub site (haseeb0127.github.io) to talk to Railway
+# 1. THE GATEKEEPER (CORS)
+# This tells Railway it is safe to talk to your GitHub website
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"], 
@@ -16,7 +16,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Storage to track the status of each video
+# A simple dictionary to store the status of each video
 jobs = {}
 
 class VideoRequest(BaseModel):
@@ -25,32 +25,43 @@ class VideoRequest(BaseModel):
     brand_name: str = "MindMotion.app"
 
 async def process_chunk(chunk_id, text, format):
+    """Simulates a cloud GPU rendering one small part"""
     print(f"⚡ Rendering Chunk {chunk_id} in {format}...")
-    await asyncio.sleep(2) # Simulating GPU rendering
+    await asyncio.sleep(2) 
     return f"chunk_{chunk_id}.mp4"
 
 async def generate_30_min_video(job_id: str, request: VideoRequest):
-    jobs[job_id] = "Slicing script into chunks..."
+    # 1. THE SLICER
+    jobs[job_id] = "Slicing Script into chunks..."
     words = request.script.split()
     chunks = [words[i:i + 150] for i in range(0, len(words), 150)] 
     
-    jobs[job_id] = f"Swarm Rendering {len(chunks)} parts..."
+    # 2. THE SWARM
+    jobs[job_id] = f"Swarm Rendering: {len(chunks)} parts..."
     tasks = [process_chunk(i, " ".join(c), request.format) for i, c in enumerate(chunks)]
     await asyncio.gather(*tasks)
     
-    jobs[job_id] = "Merging parts & adding watermark..."
+    # 3. THE STITCHER
+    jobs[job_id] = "Branding & Merging..."
     await asyncio.sleep(2)
     
     jobs[job_id] = "Completed"
-    print(f"✅ Video {job_id} is ready for download!")
+    print(f"✅ Video {job_id} is ready!")
 
 @app.post("/generate")
 async def start_engine(request: VideoRequest, background_tasks: BackgroundTasks):
-    job_id = str(uuid.uuid4()) # Unique ID for the user
+    job_id = str(uuid.uuid4()) # Your "Ticket Number"
     jobs[job_id] = "Queued"
+    
     background_tasks.add_task(generate_30_min_video, job_id, request)
-    return {"job_id": job_id, "status": "Processing Started"}
+    
+    return {
+        "job_id": job_id, 
+        "status": "Processing Started", 
+        "message": "The Swarm is rendering your video."
+    }
 
 @app.get("/status/{job_id}")
 async def get_status(job_id: str):
+    # This is how the website checks if the video is done
     return {"status": jobs.get(job_id, "Not Found")}
