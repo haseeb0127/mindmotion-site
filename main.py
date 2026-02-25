@@ -13,7 +13,7 @@ async def root():
     return {"message": "MindMotion Engine is Online and Ready!"}
 
 # 2. THE HANDSHAKE (CORS)
-# Vital for haseeb0127.github.io to securely send data to Railway
+# Vital for your GitHub site to securely talk to Railway
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"], 
