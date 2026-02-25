@@ -1,33 +1,36 @@
-<div class="mt-6">
-    <label class="block text-slate-400 mb-2 text-sm">Select Output Format:</label>
-    <select id="format" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white focus:border-teal-400">
-        <option value="16:9">YouTube (Horizontal)</option>
-        <option value="9:16">Instagram/Snap/TikTok (Vertical)</option>
-        <option value="1:1">X / Social Media Square</option>
-    </select>
-</div>
+import os
+from fastapi import FastAPI, BackgroundTasks
+from pydantic import BaseModel
+import asyncio
 
-<script>
-async function startGeneration() {
-    const btn = document.getElementById('genBtn');
-    const script = document.getElementById('userScript').value;
-    const format = document.getElementById('format').value;
-    
-    if(!script) {
-        alert("Please enter a script to begin.");
-        return;
-    }
-    
-    btn.innerHTML = `⚡ Processing ${format} Video...`;
-    btn.disabled = true;
+app = FastAPI()
 
-    // The backend logic will now handle 30-minute processing in the cloud
-    console.log(`Starting global render for: ${script.substring(0,20)}... in ${format}`);
+class VideoRequest(BaseModel):
+    script: str
+    format: str # 16:9, 9:16, or 1:1
+    brand_name: str = "MindMotion.app"
+
+async def process_chunk(chunk_id, text, format):
+    """Simulates a cloud GPU rendering one small part of the 30-minute video"""
+    print(f"⚡ Rendering Chunk {chunk_id} in {format}...")
+    await asyncio.sleep(2) # Real rendering logic goes here
+    return f"chunk_{chunk_id}.mp4"
+
+async def generate_30_min_video(request: VideoRequest):
+    # 1. THE SLICER: Break 30-minute script into 1-minute parts
+    words = request.script.split()
+    chunks = [words[i:i + 150] for i in range(0, len(words), 150)] 
     
-    setTimeout(() => {
-        alert("Your high-speed render has started. You can close this page; we will notify you when your ${format} video is ready for social media!");
-        btn.innerHTML = "🚀 Generate MindMotion Video";
-        btn.disabled = false;
-    }, 2000);
-}
-</script>
+    # 2. THE SWARM: Process all chunks AT THE SAME TIME
+    tasks = [process_chunk(i, " ".join(c), request.format) for i, c in enumerate(chunks)]
+    rendered_files = await asyncio.gather(*tasks)
+    
+    # 3. THE STITCHER: Add brand watermark and merge
+    print(f"🎬 Merging {len(rendered_files)} parts with {request.brand_name} watermark...")
+    # Final FFmpeg command would run here
+    print("✅ Video Ready for Social Media!")
+
+@app.post("/generate")
+async def start_engine(request: VideoRequest, background_tasks: BackgroundTasks):
+    background_tasks.add_task(generate_30_min_video, request)
+    return {"status": "Processing Started", "message": "The Swarm is rendering your video."}
