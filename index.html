@@ -4,52 +4,67 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MindMotion Flow | Pro AI Synthesis</title>
-    <style><div id="video-preview-box">
-    <h3 style="font-size: 16px; color: var(--primary);">🎬 4K Render Output</h3>
-    <video id="preview-player" controls></video>
-    
-    <a id="download-btn" href="#" download="MindMotion_Render.mp4" style="display: none; text-decoration: none;">
-        <button style="background: #2ecc71; margin-top: 10px;">💾 Download 4K Video</button>
-    </a>
-</div>
-        /* CSS EMBEDDED DIRECTLY TO ENSURE IT LOADS */
+    <style>
+        /* CORE THEME & VIBRANT COLORS */
         :root {
             --primary: #008080;
             --accent-cyan: #00d4ff;
             --dark-bg: #0f172a;
+            --vibrant-gradient: linear-gradient(135deg, #0f172a 0%, #004d4d 100%);
+            --glow: 0 0 15px rgba(0, 212, 255, 0.4);
+            --success: #2ecc71;
         }
 
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
-            background-color: var(--dark-bg);
+            background: var(--vibrant-gradient);
+            background-attachment: fixed;
             color: white;
             display: flex;
             justify-content: center;
             padding: 20px;
             margin: 0;
+            min-height: 100vh;
         }
 
+        /* Glassmorphism Container */
         .container {
-            background: white;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
             color: #334155;
             max-width: 650px;
             width: 100%;
             padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.6);
             text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin: auto;
         }
 
-        h1 { color: var(--dark-bg); margin-bottom: 5px; }
-        .accent { color: var(--primary); }
+        h1 { 
+            color: var(--dark-bg); 
+            margin-bottom: 5px;
+            font-size: 2.2rem;
+            letter-spacing: -1px;
+        }
+
+        .accent { 
+            color: var(--primary);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
         .subtitle { font-size: 0.9rem; color: #64748b; margin-bottom: 25px; }
 
+        /* Input Styling */
         .label-pro {
             display: block;
             text-align: left;
             font-size: 12px;
             font-weight: bold;
-            color: var(--primary);
+            color: #006666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
             margin-bottom: 8px;
         }
 
@@ -57,23 +72,30 @@
             width: 100%;
             height: 120px;
             padding: 15px;
-            border-radius: 10px;
-            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            border: 2px solid #e2e8f0;
             margin-bottom: 20px;
             box-sizing: border-box;
             font-family: inherit;
+            transition: border 0.3s;
         }
 
+        textarea:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+
+        /* Colorful Cinematic Grid */
         .cinematic-grid {
-            background: #f8fafc;
-            border: 1px solid var(--primary);
-            padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 20px;
+            background: #f0fdfd;
+            border: 2px solid #e0f2f2;
+            padding: 18px;
+            border-radius: 16px;
+            margin-bottom: 25px;
             text-align: left;
         }
 
-        .cinematic-grid h5 { margin: 0 0 12px 0; color: var(--primary); }
+        .cinematic-grid h5 { margin: 0 0 12px 0; color: var(--primary); font-size: 14px; }
 
         .control-row { display: flex; gap: 15px; margin-bottom: 15px; }
         .control-item { flex: 1; }
@@ -88,26 +110,46 @@
         select, input {
             width: 100%;
             padding: 10px;
-            border-radius: 6px;
+            border-radius: 8px;
             border: 1px solid #cbd5e1;
             font-size: 13px;
         }
 
-        button {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 15px;
-            width: 100%;
-            border-radius: 10px;
-            font-weight: bold;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: 0.3s;
+        input:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            border-style: dashed;
         }
 
-        button:hover { background: #006666; }
+        /* Glowing Button */
+        button#generate-btn {
+            background: linear-gradient(90deg, #008080, #00b3b3);
+            color: white;
+            border: none;
+            padding: 18px;
+            width: 100%;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            box-shadow: var(--glow);
+            transition: all 0.3s ease;
+        }
 
+        button#generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 25px rgba(0, 212, 255, 0.6);
+        }
+
+        button#generate-btn:disabled {
+            background: #94a3b8;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        /* Neon Console */
         .reasoning-console {
             background: #000;
             color: var(--accent-cyan);
@@ -115,26 +157,56 @@
             font-family: 'Courier New', monospace;
             height: 120px;
             overflow-y: auto;
-            border-radius: 8px;
+            border-radius: 12px;
             margin-top: 25px;
             text-align: left;
             font-size: 12px;
-            border-left: 5px solid var(--accent-cyan);
+            border: 1px solid #00d4ff;
+            box-shadow: inset 0 0 10px rgba(0, 212, 255, 0.2);
         }
 
+        /* Rainbow Progress Bar */
         #progress-container {
             display: none;
-            height: 10px;
+            height: 12px;
             background: #eee;
-            border-radius: 5px;
+            border-radius: 6px;
             margin: 20px 0;
             overflow: hidden;
         }
 
-        #progress-bar { height: 100%; background: var(--primary); width: 0%; transition: width 0.4s; }
+        #progress-bar { 
+            height: 100%; 
+            background: linear-gradient(90deg, #008080, #00d4ff, #8b5cf6); 
+            width: 0%; 
+            transition: width 0.4s ease; 
+        }
 
-        #video-preview-box { display: none; margin-top: 30px; }
-        video { width: 100%; border-radius: 12px; border: 3px solid var(--primary); background: #000; }
+        /* Preview & Output */
+        #video-preview-box { display: none; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; }
+        
+        video { 
+            width: 100%; 
+            border-radius: 16px; 
+            border: 4px solid var(--primary); 
+            background: #000; 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .download-btn-style {
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 15px;
+            width: 100%;
+            border-radius: 10px;
+            font-weight: bold;
+            margin-top: 15px;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+
+        .download-btn-style:hover { opacity: 0.9; }
     </style>
 </head>
 <body>
@@ -197,8 +269,12 @@
         <p id="status-display" style="font-size: 14px; font-weight: bold; color: var(--primary);">Ready for Diffusion...</p>
 
         <div id="video-preview-box">
-            <h3 style="font-size: 16px; color: var(--primary);">🎬 4K Render Output</h3>
+            <h3 style="font-size: 18px; color: var(--primary); margin-bottom: 15px;">🎬 4K Render Output</h3>
             <video id="preview-player" controls></video>
+            
+            <a id="download-btn" href="#" download="MindMotion_Render.mp4" style="display: none; text-decoration: none;">
+                <button class="download-btn-style">💾 Download 4K Video</button>
+            </a>
         </div>
     </main>
 </div>
