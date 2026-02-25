@@ -4,7 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MindMotion Flow | Pro AI Synthesis</title>
-    <style>
+    <style><div id="video-preview-box">
+    <h3 style="font-size: 16px; color: var(--primary);">🎬 4K Render Output</h3>
+    <video id="preview-player" controls></video>
+    
+    <a id="download-btn" href="#" download="MindMotion_Render.mp4" style="display: none; text-decoration: none;">
+        <button style="background: #2ecc71; margin-top: 10px;">💾 Download 4K Video</button>
+    </a>
+</div>
         /* CSS EMBEDDED DIRECTLY TO ENSURE IT LOADS */
         :root {
             --primary: #008080;
