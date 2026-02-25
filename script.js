@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // UI Element Selectors
+    // 1. UI Element Selectors
     const generateBtn = document.getElementById('generate-btn');
     const scriptInput = document.getElementById('script-input');
     const progressBar = document.getElementById('progress-bar');
@@ -11,6 +11,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const historyList = document.getElementById('history-list');
     const previewPlayer = document.getElementById('preview-player');
 
+    // CONFIG: Change this to your actual Railway URL
+    const BASE_URL = "https://your-railway-url.app"; 
+
     const logs = [
         "> Swarm Engine: Initializing Psychology Core...",
         "> Extracting NLP keywords from notes...",
@@ -21,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
         "> Final export in progress..."
     ];
 
-    // Main Generate Function
+    // 2. Main Generate Function
     generateBtn.addEventListener('click', async () => {
         const text = scriptInput.value.trim();
         const format = document.getElementById('format-selector').value;
@@ -32,62 +35,79 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // 1. Prepare UI
+        // Prepare UI for processing
         generateBtn.disabled = true;
         progressContainer.style.display = 'block';
         previewBox.style.display = 'none';
         shareHub.style.display = 'none';
         progressBar.style.width = '0%';
-        consoleBox.innerHTML += `<br>> Connecting to Swarm Engine at Railway...`;
+        consoleBox.innerHTML += `<br>> Initiating Pro Synthesis Engine...`;
 
-        // 2. Start Visual Simulation (Logs and Progress Bar)
+        // Start visual simulation for progress bar
         let progress = 0;
         const progressInterval = setInterval(() => {
-            if (progress < 90) { // Hold at 90% until server responds
-                progress += Math.floor(Math.random() * 5) + 1;
+            if (progress < 95) {
+                progress += Math.floor(Math.random() * 3) + 1;
                 progressBar.style.width = `${progress}%`;
-                statusDisplay.innerText = `Processing Swarm Nodes... ${progress}%`;
             }
             if (Math.random() > 0.8) {
                 const log = logs[Math.floor(Math.random() * logs.length)];
                 consoleBox.innerHTML += `<br>${log}`;
                 consoleBox.scrollTop = consoleBox.scrollHeight;
             }
-        }, 600);
+        }, 800);
 
-        // 3. Actual Backend Request
         try {
-            // REPLACE the URL below with your actual Railway App URL after deployment
-            const response = await fetch('https://your-railway-url.app/generate', {
+            // STEP 1: Send the job to the backend
+            const response = await fetch(`${BASE_URL}/generate`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
                     script: text,
                     format: format,
-                    character: character
+                    character_lock: character 
                 })
             });
 
-            if (!response.ok) throw new Error("Server connection failed");
+            if (!response.ok) throw new Error("Could not connect to Railway server.");
+            
+            const { job_id } = await response.json();
+            consoleBox.innerHTML += `<br>> Job ID Received: ${job_id}`;
 
-            const data = await response.json();
+            // STEP 2: Poll for Status
+            const pollInterval = setInterval(async () => {
+                try {
+                    const statusRes = await fetch(`${BASE_URL}/status/${job_id}`);
+                    const { status } = await statusRes.json();
 
-            if (data.video_url) {
-                clearInterval(progressInterval);
-                progressBar.style.width = '100%';
-                finalizeVideo(data.video_url, format);
-            } else {
-                throw new Error("Video URL not received from Swarm Engine");
-            }
+                    statusDisplay.innerText = `Status: ${status}`;
+                    
+                    if (status === "Completed") {
+                        clearInterval(pollInterval);
+                        clearInterval(progressInterval);
+                        progressBar.style.width = '100%';
+                        
+                        const videoUrl = `${BASE_URL}/download/${job_id}`;
+                        finalizeVideo(videoUrl, format);
+                    } else if (status.startsWith("Error")) {
+                        clearInterval(pollInterval);
+                        clearInterval(progressInterval);
+                        throw new Error(status);
+                    }
+                } catch (pollError) {
+                    console.error("Polling error:", pollError);
+                }
+            }, 3000); // Check every 3 seconds
 
         } catch (error) {
             clearInterval(progressInterval);
-            consoleBox.innerHTML += `<br><span style="color:red">> Error: ${error.message}</span>`;
+            consoleBox.innerHTML += `<br><span style="color:red">> System Error: ${error.message}</span>`;
             statusDisplay.innerText = "❌ Generation Failed";
             generateBtn.disabled = false;
         }
     });
 
+    // 3. Finalize UI and History
     function finalizeVideo(videoUrl, format) {
         generateBtn.disabled = false;
         statusDisplay.innerText = "✅ Generation Complete!";
@@ -98,17 +118,18 @@ document.addEventListener('DOMContentLoaded', () => {
         previewPlayer.src = videoUrl;
         previewPlayer.load();
         
-        consoleBox.innerHTML += `<br>> SUCCESS: Video exported to cloud storage.`;
+        consoleBox.innerHTML += `<br>> SUCCESS: Pro Video rendered and ready.`;
         consoleBox.scrollTop = consoleBox.scrollHeight;
         
-        // Add to history
+        // Add to history list
         const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         const li = document.createElement('li');
-        li.innerHTML = `<span><strong>${time}</strong> - Psychology Insight (${format})</span> <a href="${videoUrl}" target="_blank" style="color:var(--primary)">Download</a>`;
+        li.innerHTML = `<span><strong>${time}</strong> - Psychology Video (${format})</span> 
+                        <a href="${videoUrl}" target="_blank" style="color:var(--primary); font-weight:bold;">Download</a>`;
         historyList.prepend(li);
     }
 
-    // Clear History Logic
+    // 4. Clear History Logic
     document.getElementById('clear-history').addEventListener('click', () => {
         historyList.innerHTML = '';
         consoleBox.innerHTML = "> History Cleared.<br>> Engine Ready.";
