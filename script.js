@@ -1,59 +1,51 @@
-// 1. PASTE YOUR RAILWAY URL HERE
-const BACKEND_URL = "https://your-generated-name.up.railway.app"; 
+import os
+import asyncio
+import uuid
+from fastapi import FastAPI, BackgroundTasks
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
-const generateBtn = document.querySelector('#generate-btn');
-const scriptInput = document.querySelector('#script-input');
-const statusText = document.querySelector('#status-display');
-const formatSelector = document.querySelector('#format-selector');
+app = FastAPI()
 
-generateBtn.addEventListener('click', async () => {
-    const script = scriptInput.value;
-    const format = formatSelector.value;
+# This "Handshake" is required so your website can talk to Railway
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], 
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-    if (!script) {
-        alert("Please enter a script first!");
-        return;
-    }
+class VideoRequest(BaseModel):
+    script: str
+    format: str
+    brand_name: str = "MindMotion.app"
 
-    statusText.innerText = "🚀 Sending to MindMotion Engine...";
-    generateBtn.disabled = true;
+# Storage to track the status of each video
+jobs = {}
 
-    try {
-        const response = await fetch(`${BACKEND_URL}/generate`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ script, format })
-        });
+async def process_chunk(chunk_id, text, format):
+    print(f"⚡ Rendering Chunk {chunk_id} in {format}...")
+    await asyncio.sleep(2) 
+    return f"chunk_{chunk_id}.mp4"
 
-        const data = await response.json();
-        
-        if (data.job_id) {
-            statusText.innerText = "⚙️ The Swarm is rendering your video...";
-            checkStatus(data.job_id);
-        }
+async def generate_30_min_video(job_id: str, request: VideoRequest):
+    jobs[job_id] = "Slicing Script..."
+    words = request.script.split()
+    chunks = [words[i:i + 150] for i in range(0, len(words), 150)] 
+    
+    jobs[job_id] = f"Swarm Rendering {len(chunks)} parts..."
+    tasks = [process_chunk(i, " ".join(c), request.format) for i, c in enumerate(chunks)]
+    await asyncio.gather(*tasks)
+    
+    jobs[job_id] = "Completed"
 
-    } catch (error) {
-        statusText.innerText = "❌ Error: Could not connect to engine.";
-        generateBtn.disabled = false;
-        console.error(error);
-    }
-});
+@app.post("/generate")
+async def start_engine(request: VideoRequest, background_tasks: BackgroundTasks):
+    job_id = str(uuid.uuid4())
+    jobs[job_id] = "Queued"
+    background_tasks.add_task(generate_30_min_video, job_id, request)
+    return {"job_id": job_id, "status": "Processing Started"}
 
-async function checkStatus(jobId) {
-    const interval = setInterval(async () => {
-        try {
-            const res = await fetch(`${BACKEND_URL}/status/${jobId}`);
-            const data = await res.json();
-
-            statusText.innerText = "📊 Status: " + data.status;
-
-            if (data.status === "Completed") {
-                clearInterval(interval);
-                statusText.innerText = "✅ Video Ready! (Download link coming soon)";
-                generateBtn.disabled = false;
-            }
-        } catch (err) {
-            console.log("Polling error:", err);
-        }
-    }, 3000); // Checks every 3 seconds
-}
+@app.get("/status/{job_id}")
+async def get_status(job_id: str):
+    return {"status": jobs.get(job_id, "Not Found")}
