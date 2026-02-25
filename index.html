@@ -1,37 +1,34 @@
-<script src="script.js"></script>
-import os
-from fastapi import FastAPI, BackgroundTasks
-from pydantic import BaseModel
-import asyncio
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindMotion.app | AI Video Swarm</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
 
-app = FastAPI()
+    <div class="container">
+        <h1>MindMotion AI</h1>
+        <p>Generate high-speed branded videos using the Swarm Engine.</p>
 
-class VideoRequest(BaseModel):
-    script: str
-    format: str # 16:9, 9:16, or 1:1
-    brand_name: str = "MindMotion.app"
+        <textarea id="script-input" placeholder="Paste your 30-minute script here..."></textarea>
 
-async def process_chunk(chunk_id, text, format):
-    """Simulates a cloud GPU rendering one small part of the 30-minute video"""
-    print(f"⚡ Rendering Chunk {chunk_id} in {format}...")
-    await asyncio.sleep(2) # Real rendering logic goes here
-    return f"chunk_{chunk_id}.mp4"
+        <div class="controls">
+            <select id="format-selector">
+                <option value="16:9">YouTube (16:9)</option>
+                <option value="9:16">Reels/TikTok (9:16)</option>
+                <option value="1:1">Instagram (1:1)</option>
+            </select>
 
-async def generate_30_min_video(request: VideoRequest):
-    # 1. THE SLICER: Break 30-minute script into 1-minute parts
-    words = request.script.split()
-    chunks = [words[i:i + 150] for i in range(0, len(words), 150)] 
-    
-    # 2. THE SWARM: Process all chunks AT THE SAME TIME
-    tasks = [process_chunk(i, " ".join(c), request.format) for i, c in enumerate(chunks)]
-    rendered_files = await asyncio.gather(*tasks)
-    
-    # 3. THE STITCHER: Add brand watermark and merge
-    print(f"🎬 Merging {len(rendered_files)} parts with {request.brand_name} watermark...")
-    # Final FFmpeg command would run here
-    print("✅ Video Ready for Social Media!")
+            <button id="generate-btn">Generate Branded Video</button>
+        </div>
 
-@app.post("/generate")
-async def start_engine(request: VideoRequest, background_tasks: BackgroundTasks):
-    background_tasks.add_task(generate_30_min_video, request)
-    return {"status": "Processing Started", "message": "The Swarm is rendering your video."}
+        <div id="status-container">
+            <p id="status-display">System Ready. Waiting for script...</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
