@@ -1,87 +1,65 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MindMotion.app | AI Video Swarm</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
+<div class="container pro-mode">
+    <header>
+        <h1>MindMotion <span class="accent">Flow</span></h1>
+        <p class="subtitle">Powered by Gemini 3 Pro & GemPix 2 Diffusion</p>
+    </header>
 
-    <section class="tools-grid">
-        <div class="card">
-            <div class="card-icon">🧠</div>
-            <h3>Focus Flow</h3>
-            <p>Curated soundscapes to help you enter deep work states faster.</p>
-            <a href="#" class="btn-sm">Try it now</a>
+    <main>
+        <div class="input-group">
+            <label class="label-pro">🧠 Scene Reasoning Input</label>
+            <textarea id="script-input" placeholder="Enter psychology notes. Gemini 3 Pro will plan the logic, structure, and 4K visuals..."></textarea>
         </div>
-    </section>
 
-    <div class="container">
-        <header>
-            <h1>MindMotion <span class="accent">AI</span></h1>
-            <p class="subtitle">Generate high-speed branded videos using the Swarm Engine.</p>
-        </header>
-
-        <main>
-            <textarea id="script-input" placeholder="Paste your MA Psychology notes or script here..."></textarea>
-
-            <div class="controls">
-                <select id="format-selector">
-                    <option value="16:9">YouTube (16:9)</option>
-                    <option value="9:16">Reels/TikTok (9:16)</option>
-                    <option value="1:1">Instagram (1:1)</option>
-                </select>
-                <button id="generate-btn">Generate Branded Video</button>
-            </div>
-
-            <div class="pro-settings">
-                <h5>💎 Pro Studio Tools</h5>
-                
-                <label>Character Consistency Profile:</label>
-                <select id="char-lock">
-                    <option value="guard_hq">Guard HQ Bhaiya (Active)</option>
-                    <option value="psych_student">MA Psychology Student</option>
-                    <option value="custom">Upload New Character...</option>
-                </select>
-
-                <div class="btn-group">
-                    <button id="storyboard-btn" class="secondary-btn">📝 Open Storyboard</button>
-                    <button id="edit-elements-btn" class="secondary-btn">🎨 Edit Elements</button>
+        <div class="pro-settings cinematic-grid">
+            <h5>🎥 Cinematic Controls</h5>
+            <div class="control-row">
+                <div class="control-item">
+                    <label>Camera Angle</label>
+                    <select id="camera-angle">
+                        <option value="cinematic">Cinematic Wide</option>
+                        <option value="close-up">Intimate Close-up</option>
+                        <option value="drone">Aerial Swarm</option>
+                    </select>
+                </div>
+                <div class="control-item">
+                    <label>Depth of Field</label>
+                    <select id="depth-field">
+                        <option value="f1.8">Deep Bokeh (f/1.8)</option>
+                        <option value="f8">Standard (f/8)</option>
+                    </select>
                 </div>
             </div>
-
-            <div id="progress-container">
-                <div id="progress-bar"></div>
-            </div>
-
-            <div id="status-container">
-                <p id="status-display">System Ready. Waiting for script...</p>
-            </div>
-
-            <div id="video-preview-box">
-                <h3>🎬 Instant Preview</h3>
-                <video id="preview-player" controls>
-                    <source src="" type="video/mp4">
-                    Your browser does not support the video tag.
-                </video>
-            </div>
-
-            <div id="share-hub">
-                <p>📢 Share your Psychology Insight:</p>
-                <div class="share-buttons">
-                    <a id="share-whatsapp" href="#" class="share-btn wa">WhatsApp</a>
-                    <a id="share-twitter" href="#" class="share-btn x">Twitter/X</a>
-                    <button id="copy-link-btn" class="share-btn copy">🔗 Copy Link</button>
+            
+            <div class="control-row">
+                <div class="control-item">
+                    <label>Motion Engine</label>
+                    <select id="motion-engine">
+                        <option value="veo3">Google Veo 3</option>
+                        <option value="sora2">Sora 2</option>
+                        <option value="hailuo">HailuoAI Mini</option>
+                    </select>
+                </div>
+                <div class="control-item">
+                    <label>Watermark</label>
+                    <input type="text" disabled placeholder="SynthID Enabled" style="background:#e0f2f2; color:#008080; font-weight:bold;">
                 </div>
             </div>
+        </div>
 
-            <div id="engine-console">
-                > Initializing MindMotion Console...<br>
-                > Swarm Engine Standby...
-            </div>
+        <div class="controls">
+            <button id="generate-btn">⚡ Initialize Pro Synthesis</button>
+        </div>
 
-            <div id="history-container">
-                <div class="history-header">
-                    <h4>📜 Recent Videos</h4>
-                    <div class="history-
+        <div id="engine-console" class="reasoning-console">
+            > System: Gemini 3 Pro reasoning engine standby...
+        </div>
+
+        <div id="progress-container"><div id="progress-bar"></div></div>
+        <p id="status-display">Ready for Diffusion...</p>
+
+        <div id="video-preview-box">
+            <h3>🎬 4K Render Output</h3>
+            <video id="preview-player" controls></video>
+        </div>
+    </main>
+</div>
