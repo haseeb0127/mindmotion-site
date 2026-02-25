@@ -9,7 +9,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const previewBox = document.getElementById('video-preview-box');
     const previewPlayer = document.getElementById('preview-player');
     const shareHub = document.getElementById('share-hub');
+#copy-link-btn {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
 
+#copy-link-btn:active {
+    transform: scale(0.95);
+}
     // 1. THE CONSOLE LOGIC
     function updateConsole(msg) {
         const consoleBox = document.querySelector('#engine-console');
