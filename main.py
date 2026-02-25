@@ -38,25 +38,17 @@ async def download_video(job_id: str):
         return FileResponse(path="sample.mp4", filename="Sample_Video.mp4", media_type='video/mp4')
     return {"error": "File not found. Swarm still working!"}
 
-# 3. THE SWARM WORKER
+# 3. THE SWARM WORKER (Individual Chunks)
 async def process_chunk(chunk_id, text, format):
-    """Fetches a dynamic image and simulates the render"""
-    # Specifically tuned for your Psychology notes
-    keyword = "psychology,brain,mind"
-    image_url = f"https://images.unsplash.com/photo-1507413245164-6160d8298b31?q=80&w=1280&h=720&auto=format&fit=crop"
-    
     print(f"⚡ Rendering Chunk {chunk_id}: {text[:30]}...")
-    print(f"🖼️ Using Visual: {image_url}")
-    
-    await asyncio.sleep(2) # Swarm rendering simulation
+    await asyncio.sleep(2) 
     return f"chunk_{chunk_id}.mp4"
 
-# 4. THE SLICER & STITCHER
+# 4. THE SLICER & STITCHER (The Main Logic)
 async def generate_30_min_video(job_id: str, request: VideoRequest):
     # STEP 1: SLICING
     jobs[job_id] = "Slicing Psychology Notes..."
     words = request.script.split()
-    # Batching by 50 words makes the progress bar move faster for long notes
     chunks = [words[i:i + 50] for i in range(0, len(words), 50)]
     if not chunks and words: chunks = [words]
     
@@ -65,13 +57,18 @@ async def generate_30_min_video(job_id: str, request: VideoRequest):
     tasks = [process_chunk(i, " ".join(c), request.format) for i, c in enumerate(chunks)]
     await asyncio.gather(*tasks)
     
-    # STEP 3: STITCHING
+    # STEP 3: STITCHING (Crucial Fix for Download Error)
     jobs[job_id] = "Branding & Final Stitching..."
     await asyncio.sleep(2) 
+    
+    # This creates the actual file on Railway's disk
+    with open(f"final_video_{job_id}.mp4", "w") as f:
+        f.write("MindMotion Video Simulation Data") 
     
     jobs[job_id] = "Completed"
     print(f"✅ Video {job_id} is ready for Asif!")
 
+# 5. API ROUTES
 @app.post("/generate")
 async def start_engine(request: VideoRequest, background_tasks: BackgroundTasks):
     job_id = str(uuid.uuid4())
