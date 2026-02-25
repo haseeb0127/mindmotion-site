@@ -1,9 +1,12 @@
+// Replace this with your actual Railway URL if it changes
 const BACKEND_URL = "https://mindmotion-site-production.up.railway.app";
 
 document.addEventListener('DOMContentLoaded', () => {
     const generateBtn = document.querySelector('#generate-btn');
     const statusText = document.querySelector('#status-display');
     const scriptInput = document.querySelector('#script-input');
+    const progressBar = document.querySelector('#progress-bar');
+    const progressContainer = document.querySelector('#progress-container');
 
     if (generateBtn) {
         generateBtn.addEventListener('click', async () => {
@@ -15,13 +18,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // 1. INSTANT FEEDBACK (Make the UI feel fast)
-            statusText.innerText = "🚀 Connection established... Engine warming up.";
+            // 1. Initial UI Setup
+            statusText.innerText = "🚀 Connecting to Swarm...";
             generateBtn.disabled = true;
-            generateBtn.innerText = "Processing...";
+            progressContainer.style.display = "block";
+            progressBar.style.width = "5%";
 
             try {
-                // 2. TRIGGER THE SWARM
+                // 2. Send the "Generate" Command
                 const response = await fetch(`${BACKEND_URL}/generate`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -31,42 +35,37 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await response.json();
                 
                 if (data.job_id) {
-                    statusText.innerText = "⚙️ Swarm Engine Active. Rendering chunks...";
-                    // 3. START POLLING (Check status every 2 seconds)
+                    // 3. Start watching the progress
                     pollStatus(data.job_id);
                 }
             } catch (error) {
-                statusText.innerText = "❌ Connection Error. Is Railway awake?";
+                statusText.innerText = "❌ Connection Error. Is the Railway Engine running?";
                 generateBtn.disabled = false;
-                generateBtn.innerText = "Generate Branded Video";
             }
         });
     }
 
     async function pollStatus(jobId) {
+        let progress = 10;
+
         const interval = setInterval(async () => {
             try {
                 const res = await fetch(`${BACKEND_URL}/status/${jobId}`);
                 const data = await res.json();
 
-                if (data.status === "Completed") {
+                // Logic to move the bar based on the backend status
+                if (data.status.includes("Slicing")) {
+                    progress = 25;
+                } else if (data.status.includes("Rendering")) {
+                    progress = 65;
+                } else if (data.status.includes("Stitching")) {
+                    progress = 90;
+                } else if (data.status === "Completed") {
+                    progress = 100;
                     clearInterval(interval);
+                    
+                    // Reveal Final Download Button
                     statusText.innerHTML = `
-                        <div style="color: #008080; font-weight: bold;">
-                            ✅ Video Completed! <br>
-                            <a href="#" class="download-btn" style="display:inline-block; margin-top:10px; background:#008080; color:white; padding:10px 20px; text-decoration:none; border-radius:5px;">
-                                📥 Download Branded Video
-                            </a>
-                        </div>
-                    `;
-                    document.querySelector('#generate-btn').disabled = false;
-                    document.querySelector('#generate-btn').innerText = "Generate Another Video";
-                } else {
-                    statusText.innerText = "📊 Current Task: " + data.status;
-                }
-            } catch (err) {
-                console.log("Checking status...");
-            }
-        }, 2000); // Check every 2 seconds
-    }
-});
+                        <div style="color: #008080; font-weight: bold; margin-top: 10px;">
+                            ✅ Video Ready for Social Media! <br>
+                            <a href="#" class="download-btn" style="display:inline-block; margin-top:10
