@@ -8,7 +8,7 @@ from pydantic import BaseModel
 app = FastAPI()
 
 # 1. THE GATEKEEPER (CORS)
-# This allows haseeb0127.github.io to talk to this Railway server
+# This allows your GitHub site to talk to this Railway server
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"], 
@@ -16,7 +16,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# A simple dictionary to store the status of each video
+# Dictionary to store the status of each video rendering job
 jobs = {}
 
 class VideoRequest(BaseModel):
@@ -26,20 +26,20 @@ class VideoRequest(BaseModel):
 
 async def process_chunk(chunk_id, text, format):
     print(f"⚡ Rendering Chunk {chunk_id} in {format}...")
-    await asyncio.sleep(2) # Simulated rendering
+    await asyncio.sleep(2) # Simulated cloud GPU rendering
     return f"chunk_{chunk_id}.mp4"
 
 async def generate_30_min_video(job_id: str, request: VideoRequest):
-    jobs[job_id] = "Slicing Script..."
+    jobs[job_id] = "Slicing Script into chunks..."
     words = request.script.split()
     chunks = [words[i:i + 150] for i in range(0, len(words), 150)] 
     
-    jobs[job_id] = f"Rendering {len(chunks)} Chunks..."
+    jobs[job_id] = f"Swarm Rendering: {len(chunks)} parts in progress..."
     tasks = [process_chunk(i, " ".join(c), request.format) for i, c in enumerate(chunks)]
     rendered_files = await asyncio.gather(*tasks)
     
-    jobs[job_id] = "Branding & Stitching..."
-    # FFmpeg logic would happen here
+    jobs[job_id] = "Stitching parts and adding MindMotion watermark..."
+    # FFmpeg logic would happen here in the next phase
     await asyncio.sleep(2)
     
     jobs[job_id] = "Completed"
@@ -47,8 +47,7 @@ async def generate_30_min_video(job_id: str, request: VideoRequest):
 
 @app.post("/generate")
 async def start_engine(request: VideoRequest, background_tasks: BackgroundTasks):
-    # Generate a unique ID for this specific video
-    job_id = str(uuid.uuid4())
+    job_id = str(uuid.uuid4()) # Unique ID for this video
     jobs[job_id] = "Queued"
     
     background_tasks.add_task(generate_30_min_video, job_id, request)
