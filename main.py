@@ -7,13 +7,13 @@ from pydantic import BaseModel
 
 app = FastAPI()
 
-# 1. THE ROOT CHECK (Ensures the Station is Open)
+# 1. THE ROOT CHECK (The "Train Station" greeting)
 @app.get("/")
 async def root():
     return {"message": "MindMotion Engine is Online and Ready!"}
 
 # 2. THE HANDSHAKE (CORS)
-# This allows haseeb0127.github.io to securely send data to Railway
+# Vital for haseeb0127.github.io to securely send data to Railway
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"], 
@@ -21,7 +21,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# This dictionary stores the live status of every video job
+# This dictionary tracks the status of each video
 jobs = {}
 
 class VideoRequest(BaseModel):
@@ -30,14 +30,14 @@ class VideoRequest(BaseModel):
     brand_name: str = "MindMotion.app"
 
 async def process_chunk(chunk_id, text, format):
-    """Simulates a cloud GPU rendering one part of the video"""
+    """Simulates a cloud GPU rendering one small part"""
     print(f"⚡ Rendering Chunk {chunk_id} in {format}...")
     await asyncio.sleep(2) 
     return f"chunk_{chunk_id}.mp4"
 
 async def generate_30_min_video(job_id: str, request: VideoRequest):
     # 1. THE SLICER
-    jobs[job_id] = "Slicing script into chunks..."
+    jobs[job_id] = "Slicing Script into chunks..."
     words = request.script.split()
     chunks = [words[i:i + 150] for i in range(0, len(words), 150)] 
     
@@ -48,10 +48,10 @@ async def generate_30_min_video(job_id: str, request: VideoRequest):
     
     # 3. THE STITCHER
     jobs[job_id] = "Branding & Stitching..."
-    await asyncio.sleep(2) # Simulating FFmpeg merge
+    await asyncio.sleep(2)
     
     jobs[job_id] = "Completed"
-    print(f"✅ Video {job_id} is ready for download!")
+    print(f"✅ Video {job_id} is ready!")
 
 @app.post("/generate")
 async def start_engine(request: VideoRequest, background_tasks: BackgroundTasks):
