@@ -3,12 +3,10 @@ import asyncio
 import uuid
 from fastapi import FastAPI, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import RedirectResponse
+from gradio_client import Client
 
-# 1. Initialize the app FIRST
 app = FastAPI()
 
-# 2. Add security permissions (CORS)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -19,36 +17,40 @@ app.add_middleware(
 
 jobs = {}
 
-@app.get("/")
-async def health():
-    return {"status": "Engine Online"}
+# THE UNLIMITED ENGINE: Official Wan2.2 5B Space
+HF_SPACE_ID = "Wan-AI/Wan2.2-5B" 
 
 @app.get("/generate")
 async def generate(script: str, background_tasks: BackgroundTasks):
     job_id = str(uuid.uuid4())
+    jobs[job_id] = {"status": "Connecting to ZeroGPU Cluster...", "url": None}
     
-    # Store BOTH status and a blank URL
-    jobs[job_id] = {"status": "Analyzing Psychology Notes...", "url": None}
-    
-    async def process_sim(jid):
-        await asyncio.sleep(4)
-        
-        # Give it a REAL video URL so the web player actually works!
-        jobs[jid]["url"] = "https://www.w3schools.com/html/mov_bbb.mp4"
-        jobs[jid]["status"] = "Completed"
+    async def run_wan_video(jid, user_script):
+        try:
+            # Connect to the Hugging Face Space
+            client = Client(HF_SPACE_ID)
+            
+            jobs[jid]["status"] = "AI is thinking (Queueing on ZeroGPU)..."
+            
+            # Pinging the Wan2.2 API
+            # Note: 480p is recommended for the fastest free-tier rendering
+            result = client.predict(
+                prompt=f"Cinematic 4K, high detail, {user_script}",
+                resolution="480p", 
+                api_name="/predict"
+            )
+            
+            # Result is the direct path to the .mp4
+            jobs[jid]["url"] = result
+            jobs[jid]["status"] = "Completed"
+            
+        except Exception as e:
+            jobs[jid]["status"] = "Queue Full. Retrying in 30s..."
+            print(f"HF Error: {e}")
 
-    background_tasks.add_task(process_sim, job_id)
+    background_tasks.add_task(run_wan_video, job_id, script)
     return {"job_id": job_id}
 
 @app.get("/status/{job_id}")
 async def status(job_id: str):
-    # This automatically returns both the status AND the direct video URL
     return jobs.get(job_id, {"status": "Pending"})
-
-@app.get("/download/{job_id}")
-async def download(job_id: str):
-    job_info = jobs.get(job_id, {})
-    video_url = job_info.get("url", "https://www.w3schools.com/html/mov_bbb.mp4")
-    
-    # Safely redirect to the actual video file
-    return RedirectResponse(url=video_url)
