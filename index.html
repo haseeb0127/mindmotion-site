@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MindMotion Flow | Pro AI Synthesis</title>
     <style>
-        /* CORE THEME & VIBRANT COLORS */
+        /* CORE THEME */
         :root {
             --primary: #008080;
             --accent-cyan: #00d4ff;
@@ -27,7 +27,6 @@
             min-height: 100vh;
         }
 
-        /* Glassmorphism Container */
         .container {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
@@ -42,239 +41,92 @@
             margin: auto;
         }
 
-        h1 { 
-            color: var(--dark-bg); 
-            margin-bottom: 5px;
-            font-size: 2.2rem;
-            letter-spacing: -1px;
-        }
-
-        .accent { 
-            color: var(--primary);
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
-        }
-
+        h1 { color: var(--dark-bg); margin-bottom: 5px; font-size: 2.2rem; }
+        .accent { color: var(--primary); }
         .subtitle { font-size: 0.9rem; color: #64748b; margin-bottom: 25px; }
 
-        /* Input Styling */
-        .label-pro {
-            display: block;
-            text-align: left;
-            font-size: 12px;
-            font-weight: bold;
-            color: #006666;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 8px;
-        }
+        .label-pro { display: block; text-align: left; font-size: 12px; font-weight: bold; color: #006666; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
 
-        textarea {
-            width: 100%;
-            height: 120px;
-            padding: 15px;
-            border-radius: 12px;
-            border: 2px solid #e2e8f0;
-            margin-bottom: 20px;
-            box-sizing: border-box;
-            font-family: inherit;
-            transition: border 0.3s;
-        }
+        textarea { width: 100%; height: 100px; padding: 15px; border-radius: 12px; border: 2px solid #e2e8f0; margin-bottom: 20px; box-sizing: border-box; }
 
-        textarea:focus {
-            border-color: var(--primary);
-            outline: none;
-        }
+        .cinematic-grid { background: #f0fdfd; border: 2px solid #e0f2f2; padding: 18px; border-radius: 16px; margin-bottom: 20px; text-align: left; }
+        .cinematic-grid h5 { margin: 0 0 10px 0; color: var(--primary); }
 
-        /* Colorful Cinematic Grid */
-        .cinematic-grid {
-            background: #f0fdfd;
-            border: 2px solid #e0f2f2;
-            padding: 18px;
-            border-radius: 16px;
-            margin-bottom: 25px;
-            text-align: left;
-        }
-
-        .cinematic-grid h5 { margin: 0 0 12px 0; color: var(--primary); font-size: 14px; }
-
-        .control-row { display: flex; gap: 15px; margin-bottom: 15px; }
+        .control-row { display: flex; gap: 10px; margin-bottom: 10px; }
         .control-item { flex: 1; }
-        .control-item label {
-            font-size: 10px;
-            text-transform: uppercase;
-            color: #64748b;
-            margin-bottom: 5px;
-            display: block;
-        }
+        select { width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #cbd5e1; }
 
-        select, input {
-            width: 100%;
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid #cbd5e1;
-            font-size: 13px;
-        }
+        button#generate-btn { background: var(--primary); color: white; border: none; padding: 15px; width: 100%; border-radius: 12px; font-weight: 800; cursor: pointer; box-shadow: var(--glow); }
 
-        input:disabled {
-            opacity: 0.7;
-            cursor: not-allowed;
-            border-style: dashed;
-        }
+        .reasoning-console { background: #000; color: var(--accent-cyan); padding: 12px; font-family: monospace; height: 100px; overflow-y: auto; border-radius: 12px; margin-top: 20px; text-align: left; font-size: 11px; }
 
-        /* Glowing Button */
-        button#generate-btn {
-            background: linear-gradient(90deg, #008080, #00b3b3);
-            color: white;
-            border: none;
-            padding: 18px;
-            width: 100%;
-            border-radius: 12px;
-            font-weight: 800;
-            font-size: 1.1rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            cursor: pointer;
-            box-shadow: var(--glow);
-            transition: all 0.3s ease;
-        }
+        #video-preview-box { display: none; margin-top: 25px; }
+        video { width: 100%; border-radius: 12px; border: 3px solid var(--primary); }
 
-        button#generate-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 0 25px rgba(0, 212, 255, 0.6);
+        /* Merger Section Styling */
+        .merger-card {
+            margin-top: 40px;
+            padding: 20px;
+            border-radius: 20px;
+            background: #f8fafc;
+            border: 2px dashed #008080;
         }
-
-        button#generate-btn:disabled {
-            background: #94a3b8;
-            box-shadow: none;
-            cursor: not-allowed;
-        }
-
-        /* Neon Console */
-        .reasoning-console {
-            background: #000;
-            color: var(--accent-cyan);
-            padding: 15px;
-            font-family: 'Courier New', monospace;
-            height: 120px;
-            overflow-y: auto;
-            border-radius: 12px;
-            margin-top: 25px;
-            text-align: left;
-            font-size: 12px;
-            border: 1px solid #00d4ff;
-            box-shadow: inset 0 0 10px rgba(0, 212, 255, 0.2);
-        }
-
-        /* Rainbow Progress Bar */
-        #progress-container {
-            display: none;
-            height: 12px;
-            background: #eee;
-            border-radius: 6px;
-            margin: 20px 0;
-            overflow: hidden;
-        }
-
-        #progress-bar { 
-            height: 100%; 
-            background: linear-gradient(90deg, #008080, #00d4ff, #8b5cf6); 
-            width: 0%; 
-            transition: width 0.4s ease; 
-        }
-
-        /* Preview & Output */
-        #video-preview-box { display: none; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; }
-        
-        video { 
-            width: 100%; 
-            border-radius: 16px; 
-            border: 4px solid var(--primary); 
-            background: #000; 
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-        }
-
-        .download-btn-style {
-            background: var(--success);
-            color: white;
-            border: none;
-            padding: 15px;
-            width: 100%;
-            border-radius: 10px;
-            font-weight: bold;
-            margin-top: 15px;
-            cursor: pointer;
-            transition: opacity 0.3s;
-        }
-
-        .download-btn-style:hover { opacity: 0.9; }
     </style>
 </head>
 <body>
 
-<div class="container pro-mode">
+<div class="container">
     <header>
         <h1>MindMotion <span class="accent">Flow</span></h1>
-        <p class="subtitle">Powered by Gemini 3 Pro & GemPix 2 Diffusion</p>
+        <p class="subtitle">AI Video Synthesis for Psychology Professionals</p>
     </header>
 
     <main>
-        <div class="input-group">
-            <label class="label-pro">🧠 Scene Reasoning Input</label>
-            <textarea id="script-input" placeholder="Enter psychology notes. Gemini 3 Pro will plan the logic, structure, and 4K visuals..."></textarea>
-        </div>
+        <label class="label-pro">🧠 Scene Reasoning Input</label>
+        <textarea id="script-input" placeholder="Enter psychology notes here..."></textarea>
 
-        <div class="pro-settings cinematic-grid">
+        <div class="cinematic-grid">
             <h5>🎥 Cinematic Controls</h5>
             <div class="control-row">
                 <div class="control-item">
-                    <label>Camera Angle</label>
+                    <label style="font-size: 10px;">Camera Angle</label>
                     <select id="camera-angle">
-                        <option value="cinematic">Cinematic Wide</option>
-                        <option value="close-up">Intimate Close-up</option>
-                        <option value="drone">Aerial Swarm</option>
+                        <option>Cinematic Wide</option>
+                        <option>Intimate Close-up</option>
                     </select>
                 </div>
                 <div class="control-item">
-                    <label>Depth of Field</label>
-                    <select id="depth-field">
-                        <option value="f1.8">Deep Bokeh (f/1.8)</option>
-                        <option value="f8">Standard (f/8)</option>
-                    </select>
-                </div>
-            </div>
-            
-            <div class="control-row">
-                <div class="control-item">
-                    <label>Motion Engine</label>
+                    <label style="font-size: 10px;">Motion Engine</label>
                     <select id="motion-engine">
-                        <option value="veo3">Google Veo 3</option>
-                        <option value="sora2">Sora 2</option>
-                        <option value="hailuo">HailuoAI Mini</option>
+                        <option>HailuoAI Mini</option>
+                        <option>Wan 2.1 Pro</option>
                     </select>
-                </div>
-                <div class="control-item">
-                    <label>Watermark</label>
-                    <input type="text" disabled placeholder="SynthID Enabled" style="background:#e0f2f2; color:#008080; font-weight:bold;">
                 </div>
             </div>
         </div>
 
         <button id="generate-btn">⚡ Initialize Pro Synthesis</button>
 
-        <div id="engine-console" class="reasoning-console">
-            > System: Gemini 3 Pro reasoning engine standby...
-        </div>
-
-        <div id="progress-container"><div id="progress-bar"></div></div>
-        <p id="status-display" style="font-size: 14px; font-weight: bold; color: var(--primary);">Ready for Diffusion...</p>
+        <div id="engine-console" class="reasoning-console">> System: Ready...</div>
+        <p id="status-display" style="font-size: 12px; margin-top: 10px; color: #008080;">Standby</p>
 
         <div id="video-preview-box">
-            <h3 style="font-size: 18px; color: var(--primary); margin-bottom: 15px;">🎬 4K Render Output</h3>
             <video id="preview-player" controls></video>
-            
-            <a id="download-btn" href="#" download="MindMotion_Render.mp4" style="display: none; text-decoration: none;">
-                <button class="download-btn-style">💾 Download 4K Video</button>
+            <a id="download-btn" href="#" download style="display:none;">
+                <button style="background: #2ecc71; color:white; width:100%; padding:10px; border-radius:8px; margin-top:10px; border:none; cursor:pointer;">💾 Download Clip</button>
             </a>
+        </div>
+
+        <hr style="margin: 40px 0; opacity: 0.1;">
+
+        <div class="merger-card">
+            <h3 style="color: var(--primary); margin-top:0;">🎬 Pro Multi-Clip Merger</h3>
+            <p style="font-size: 0.85rem; color: #64748b;">Select your 10-second clips to create your 30-minute masterpiece.</p>
+            <input type="file" id="merge-upload" multiple accept="video/mp4" style="margin: 15px 0; font-size: 12px;">
+            <button id="merge-btn" style="background: #0072ff; color: white; border: none; padding: 12px; border-radius: 10px; cursor: pointer; width: 100%; font-weight: bold;">
+                ⚡ Merge All Clips with Fade
+            </button>
+            <div id="merge-status" style="margin-top: 10px; font-size: 12px; color: #ff9800;"></div>
         </div>
     </main>
 </div>
