@@ -1,164 +1,149 @@
-const BACKEND_URL = "https://mindmotion-site-production.up.railway.app";
+/* GLOBAL STYLES */
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f0f2f5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+}
 
-document.addEventListener('DOMContentLoaded', () => {
-    const generateBtn = document.querySelector('#generate-btn');
-    const statusText = document.querySelector('#status-display');
-    const scriptInput = document.querySelector('#script-input');
-    const progressBar = document.querySelector('#progress-bar');
-    const progressContainer = document.querySelector('#progress-container');
-    const previewBox = document.getElementById('video-preview-box');
-    const previewPlayer = document.getElementById('preview-player');
-    const shareHub = document.getElementById('share-hub');
-    const clearHistoryBtn = document.getElementById('clear-history');
+.container {
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    width: 95%;
+    max-width: 650px;
+    text-align: center;
+}
 
-    function updateConsole(msg) {
-        const consoleBox = document.querySelector('#engine-console');
-        if (consoleBox) {
-            const time = new Date().toLocaleTimeString([], { hour12: false });
-            consoleBox.innerHTML += `> [${time}] ${msg}<br>`;
-            consoleBox.scrollTop = consoleBox.scrollHeight;
-        }
-    }
+h1 { color: #008080; margin-bottom: 5px; }
 
-    async function startEngineFlow() {
-        const script = scriptInput.value;
-        const format = document.querySelector('#format-selector').value;
+/* INPUTS & CONTROLS */
+textarea {
+    width: 100%;
+    height: 120px;
+    padding: 15px;
+    border: 2px solid #ddd;
+    border-radius: 12px;
+    resize: none;
+    box-sizing: border-box;
+    margin-bottom: 15px;
+    font-size: 14px;
+}
 
-        if (!script) {
-            alert("Asif, please enter your Psychology notes first!");
-            return;
-        }
+textarea:focus { border-color: #008080; outline: none; }
 
-        statusText.innerText = "🚀 Connecting to Swarm...";
-        updateConsole("System Override: Manual Start Initiated.");
-        if (previewBox) previewBox.style.display = "none"; 
-        if (shareHub) shareHub.style.display = "none";
-        
-        generateBtn.disabled = true;
-        progressContainer.style.display = "block";
-        progressBar.style.width = "5%";
+.controls { display: flex; gap: 10px; margin-bottom: 20px; }
 
-        try {
-            const response = await fetch(`${BACKEND_URL}/generate`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ script, format })
-            });
-            const data = await response.json();
-            if (data.job_id) {
-                updateConsole(`Job ID Created: ${data.job_id}`);
-                pollStatus(data.job_id);
-            }
-        } catch (error) {
-            statusText.innerText = "❌ Connection Error!";
-            updateConsole("ERROR: Failed to reach the Swarm engine.");
-            generateBtn.disabled = false;
-        }
-    }
+#generate-btn {
+    background: #008080;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    flex-grow: 1;
+    font-weight: bold;
+    transition: 0.3s;
+}
 
-    if (generateBtn) {
-        generateBtn.onclick = startEngineFlow;
-    }
+#generate-btn:hover { background: #005a5a; }
 
-    async function pollStatus(jobId) {
-        let lastStatus = "";
-        const interval = setInterval(async () => {
-            try {
-                const res = await fetch(`${BACKEND_URL}/status/${jobId}`);
-                const data = await res.json();
+/* PROGRESS & PREVIEW */
+#progress-container {
+    height: 10px;
+    background: #eee;
+    border-radius: 5px;
+    margin: 20px 0;
+    overflow: hidden;
+}
 
-                if (data.status !== lastStatus) {
-                    updateConsole(`System Update: ${data.status}`);
-                    lastStatus = data.status;
-                }
+#progress-bar {
+    height: 100%;
+    background: #008080;
+    width: 0%;
+    transition: width 0.4s ease;
+}
 
-                let progress = 10;
-                if (data.status.includes("Slicing")) progress = 25;
-                else if (data.status.includes("Rendering")) progress = 65;
-                else if (data.status.includes("Stitching")) progress = 90;
-                else if (data.status === "Completed") {
-                    progress = 100;
-                    clearInterval(interval);
-                    
-                    const videoUrl = `${BACKEND_URL}/download/${jobId}`;
+#preview-player {
+    width: 100%;
+    border-radius: 12px;
+    border: 3px solid #008080;
+    background: #000;
+}
 
-                    if (previewBox && previewPlayer) {
-                        previewBox.style.display = "block";
-                        previewPlayer.src = videoUrl;
-                        previewPlayer.load();
-                        updateConsole("Visual Preview Generated.");
-                    }
+/* SHARE BUTTONS */
+.share-buttons { display: flex; justify-content: center; gap: 10px; margin-top: 10px; }
 
-                    saveToHistory(videoUrl);
+.share-buttons a, #copy-link-btn {
+    text-decoration: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: bold;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
 
-                    if (shareHub) {
-                        const whatsappBtn = document.getElementById('share-whatsapp');
-                        const twitterBtn = document.getElementById('share-twitter');
-                        const copyBtn = document.getElementById('copy-link-btn');
-                        const shareMsg = encodeURIComponent("Check out my MA Psychology video! 🧠");
-                        
-                        whatsappBtn.href = `https://api.whatsapp.com/send?text=${shareMsg}%20${videoUrl}`;
-                        twitterBtn.href = `https://twitter.com/intent/tweet?text=${shareMsg}&url=${videoUrl}`;
+#share-whatsapp { background: #25D366; }
+#share-twitter { background: #1DA1F2; }
+#copy-link-btn { background: #6c757d; }
 
-                        copyBtn.onclick = () => {
-                            navigator.clipboard.writeText(videoUrl).then(() => {
-                                const originalText = copyBtn.innerText;
-                                copyBtn.innerText = "✅ Copied!";
-                                updateConsole("URL copied to clipboard.");
-                                setTimeout(() => { copyBtn.innerText = originalText; }, 2000);
-                            });
-                        };
-                        shareHub.style.display = "block";
-                    }
+#copy-link-btn:active { transform: scale(0.95); }
 
-                    statusText.innerHTML = `
-                        <div style="color: #008080; font-weight: bold; margin-top: 10px;">
-                            ✅ Video Ready! <br>
-                            <a href="${videoUrl}" class="download-btn" target="_blank" style="display:inline-block; margin-top:10px; background:#008080; color:white; padding:10px 20px; text-decoration:none; border-radius:5px;">
-                                📥 Download Branded Video
-                            </a>
-                        </div>
-                    `;
-                    updateConsole("SUCCESS: All systems clear.");
-                    generateBtn.disabled = false;
-                }
+/* CONSOLE */
+#engine-console {
+    background: #1a1a1a;
+    color: #00ff00;
+    padding: 15px;
+    font-family: monospace;
+    height: 100px;
+    overflow-y: auto;
+    border-radius: 8px;
+    margin-top: 25px;
+    text-align: left;
+    font-size: 11px;
+    border-left: 5px solid #008080;
+}
 
-                progressBar.style.width = progress + "%";
-                if (data.status !== "Completed") {
-                    statusText.innerText = "📊 " + data.status;
-                }
-            } catch (err) { console.log("Checking..."); }
-        }, 2000); 
-    }
+/* HISTORY SECTION */
+#history-container {
+    margin-top: 30px;
+    border-top: 2px solid #eee;
+    padding-top: 20px;
+    text-align: left;
+}
 
-    function saveToHistory(url) {
-        let history = JSON.parse(localStorage.getItem('videoHistory')) || [];
-        history.unshift({ url: url, date: new Date().toLocaleString() });
-        history = history.slice(0, 3);
-        localStorage.setItem('videoHistory', JSON.stringify(history));
-        updateHistoryUI();
-    }
+.history-header { display: flex; justify-content: space-between; align-items: center; }
 
-    function updateHistoryUI() {
-        let history = JSON.parse(localStorage.getItem('videoHistory')) || [];
-        const historyList = document.getElementById('history-list');
-        if (historyList) {
-            historyList.innerHTML = history.map(item => 
-                `<li style="margin-bottom: 8px;">
-                    <a href="${item.url}" target="_blank">🎥 Video: ${item.date}</a>
-                </li>`
-            ).join('');
-        }
-    }
+.history-actions button {
+    background: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 10px;
+    padding: 3px 7px;
+}
 
-    if (clearHistoryBtn) {
-        clearHistoryBtn.onclick = () => {
-            if (confirm("Asif, clear your video history?")) {
-                localStorage.removeItem('videoHistory');
-                updateHistoryUI();
-                updateConsole("History cleared.");
-            }
-        };
-    }
-    updateHistoryUI();
-});
+#export-history { border: 1px solid #008080; color: #008080; margin-right: 5px; }
+#export-history:hover { background: #008080; color: white; }
+
+#clear-history { border: 1px solid #ff4d4d; color: #ff4d4d; }
+#clear-history:hover { background: #ff4d4d; color: white; }
+
+#history-list { list-style: none; padding: 0; margin-top: 15px; }
+
+#history-list li {
+    background: #f8f9fa;
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    border-left: 4px solid #008080;
+}
+
+#history-list a { color: #008080; text-decoration: none; font-weight: bold; font-size: 12px; }
+#history-list a:hover { text-decoration: underline; }
