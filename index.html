@@ -1,0 +1,28 @@
+<script>
+    const btn = document.querySelector('button');
+    const textarea = document.querySelector('textarea');
+
+    btn.addEventListener('click', async () => {
+        const script = textarea.value;
+        if (!script) return alert("Founder, please enter a script first!");
+
+        btn.innerText = "🧠 AI Director is working...";
+        btn.disabled = true;
+
+        try {
+            // This is where we will eventually put your Streamlit/FastAPI URL
+            console.log("Sending script to AI Engine:", script);
+            
+            // For now, let's simulate a success
+            setTimeout(() => {
+                alert("Scene engine triggered! Your video is being processed.");
+                btn.innerText = "🚀 Generate MindMotion Video";
+                btn.disabled = false;
+            }, 2000);
+            
+        } catch (error) {
+            alert("Connection error. Check your backend!");
+            btn.disabled = false;
+        }
+    });
+</script>
