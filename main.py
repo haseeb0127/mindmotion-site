@@ -1,13 +1,14 @@
 import os
-import uuid
 import asyncio
+import uuid
 from fastapi import FastAPI, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 app = FastAPI()
 
-# CRITICAL: This allows your GitHub Pages site to access this API
+# 1. THE GATEKEEPER (CORS)
+# This allows haseeb0127.github.io to talk to this Railway server
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"], 
@@ -15,18 +16,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# A simple dictionary to store the status of each video
+jobs = {}
+
 class VideoRequest(BaseModel):
     script: str
     format: str
     brand_name: str = "MindMotion.app"
 
-# Global dictionary to track video progress
-jobs = {}
-
 async def process_chunk(chunk_id, text, format):
-    # This is where the AI GPU/FFmpeg logic will eventually sit
     print(f"⚡ Rendering Chunk {chunk_id} in {format}...")
-    await asyncio.sleep(5) # Simulating hard work
+    await asyncio.sleep(2) # Simulated rendering
     return f"chunk_{chunk_id}.mp4"
 
 async def generate_30_min_video(job_id: str, request: VideoRequest):
@@ -38,19 +38,26 @@ async def generate_30_min_video(job_id: str, request: VideoRequest):
     tasks = [process_chunk(i, " ".join(c), request.format) for i, c in enumerate(chunks)]
     rendered_files = await asyncio.gather(*tasks)
     
-    jobs[job_id] = "Stitching & Watermarking..."
-    # FFmpeg stitching logic would go here
+    jobs[job_id] = "Branding & Stitching..."
+    # FFmpeg logic would happen here
     await asyncio.sleep(2)
     
     jobs[job_id] = "Completed"
-    print(f"✅ Job {job_id} Finished!")
+    print(f"✅ Video {job_id} is ready!")
 
 @app.post("/generate")
 async def start_engine(request: VideoRequest, background_tasks: BackgroundTasks):
+    # Generate a unique ID for this specific video
     job_id = str(uuid.uuid4())
     jobs[job_id] = "Queued"
+    
     background_tasks.add_task(generate_30_min_video, job_id, request)
-    return {"job_id": job_id, "status": "Processing Started"}
+    
+    return {
+        "job_id": job_id,
+        "status": "Processing Started",
+        "message": "The Swarm is rendering your video."
+    }
 
 @app.get("/status/{job_id}")
 async def get_status(job_id: str):
