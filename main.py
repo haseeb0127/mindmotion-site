@@ -7,7 +7,7 @@ from pydantic import BaseModel
 
 app = FastAPI()
 
-# 1. THE GATEKEEPER (CORS)
+# 1. THE HANDSHAKE (CORS)
 # This allows your GitHub site to talk to this Railway server
 app.add_middleware(
     CORSMiddleware,
@@ -16,7 +16,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Dictionary to store the status of each video rendering job
+# A simple dictionary to store the status of each video
 jobs = {}
 
 class VideoRequest(BaseModel):
@@ -26,7 +26,7 @@ class VideoRequest(BaseModel):
 
 async def process_chunk(chunk_id, text, format):
     print(f"⚡ Rendering Chunk {chunk_id} in {format}...")
-    await asyncio.sleep(2) # Simulated cloud GPU rendering
+    await asyncio.sleep(2) 
     return f"chunk_{chunk_id}.mp4"
 
 async def generate_30_min_video(job_id: str, request: VideoRequest):
@@ -36,10 +36,9 @@ async def generate_30_min_video(job_id: str, request: VideoRequest):
     
     jobs[job_id] = f"Swarm Rendering: {len(chunks)} parts in progress..."
     tasks = [process_chunk(i, " ".join(c), request.format) for i, c in enumerate(chunks)]
-    rendered_files = await asyncio.gather(*tasks)
+    await asyncio.gather(*tasks)
     
-    jobs[job_id] = "Stitching parts and adding MindMotion watermark..."
-    # FFmpeg logic would happen here in the next phase
+    jobs[job_id] = "Stitching & Watermarking..."
     await asyncio.sleep(2)
     
     jobs[job_id] = "Completed"
@@ -47,16 +46,10 @@ async def generate_30_min_video(job_id: str, request: VideoRequest):
 
 @app.post("/generate")
 async def start_engine(request: VideoRequest, background_tasks: BackgroundTasks):
-    job_id = str(uuid.uuid4()) # Unique ID for this video
+    job_id = str(uuid.uuid4()) # Unique ID for the user to track
     jobs[job_id] = "Queued"
-    
     background_tasks.add_task(generate_30_min_video, job_id, request)
-    
-    return {
-        "job_id": job_id,
-        "status": "Processing Started",
-        "message": "The Swarm is rendering your video."
-    }
+    return {"job_id": job_id, "status": "Processing Started"}
 
 @app.get("/status/{job_id}")
 async def get_status(job_id: str):
