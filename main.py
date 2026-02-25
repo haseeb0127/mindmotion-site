@@ -7,12 +7,13 @@ from pydantic import BaseModel
 
 app = FastAPI()
 
-# 1. THE ROOT CHECK (This fixes the "Not Found" error)
+# 1. THE ROOT CHECK (Ensures the 'Train' has arrived at the station)
 @app.get("/")
 async def root():
     return {"message": "MindMotion Engine is Online and Ready!"}
 
 # 2. THE HANDSHAKE (CORS)
+# Allows your GitHub frontend to talk to this Railway backend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"], 
@@ -35,14 +36,17 @@ async def process_chunk(chunk_id, text, format):
     return f"chunk_{chunk_id}.mp4"
 
 async def generate_30_min_video(job_id: str, request: VideoRequest):
+    # 1. THE SLICER
     jobs[job_id] = "Slicing script into chunks..."
     words = request.script.split()
     chunks = [words[i:i + 150] for i in range(0, len(words), 150)] 
     
+    # 2. THE SWARM
     jobs[job_id] = f"Swarm Rendering {len(chunks)} parts..."
     tasks = [process_chunk(i, " ".join(c), request.format) for i, c in enumerate(chunks)]
     await asyncio.gather(*tasks)
     
+    # 3. THE STITCHER
     jobs[job_id] = "Branding & Stitching..."
     await asyncio.sleep(2)
     
@@ -60,6 +64,7 @@ async def start_engine(request: VideoRequest, background_tasks: BackgroundTasks)
         "message": "The Swarm is rendering your video."
     }
 
+# 3. THE STATUS CHECKER
 @app.get("/status/{job_id}")
 async def get_status(job_id: str):
     return {"status": jobs.get(job_id, "Not Found")}
