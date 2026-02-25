@@ -8,7 +8,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const previewBox = document.getElementById('video-preview-box');
     const previewPlayer = document.getElementById('preview-player');
     const downloadBtnLink = document.getElementById('download-btn');
+function finalizeVideo(videoUrl) {
+    generateBtn.disabled = false;
+    progressBar.style.width = '100%';
+    statusDisplay.innerText = "✅ Synthesis Complete!";
+    
+    // 1. Reveal the video box
+    previewBox.style.display = 'block';
+    
+    // 2. Set the video source and attributes
+    previewPlayer.src = videoUrl;
+    previewPlayer.setAttribute('autoplay', 'true');
+    previewPlayer.setAttribute('controls', 'true');
+    
+    // 3. Play the video immediately
+    previewPlayer.play().catch(e => console.log("Auto-play blocked, please click play."));
 
+    // 4. Set Download Link
+    if (downloadBtnLink) {
+        downloadBtnLink.href = videoUrl;
+        downloadBtnLink.style.display = 'inline-block';
+    }
+    
+    consoleBox.innerHTML += `<br>> [Stream] Cinematic sequence synchronized. Enjoy.`;
+}
     // YOUR ACTUAL RAILWAY BACKEND URL
     const BASE_URL = "https://mindmotion-site-production.up.railway.app"; 
 
