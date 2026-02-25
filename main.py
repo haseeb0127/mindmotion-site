@@ -1,51 +1,58 @@
-import os
-import asyncio
-import uuid
-from fastapi import FastAPI, BackgroundTasks
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+const BACKEND_URL = "https://mindmotion-site-production.up.railway.app";
 
-app = FastAPI()
+document.addEventListener('DOMContentLoaded', () => {
+    const generateBtn = document.querySelector('#generate-btn');
+    const statusText = document.querySelector('#status-display');
+    const scriptInput = document.querySelector('#script-input');
 
-# THE GREETING: Stops the "Not Found" error
-@app.get("/")
-async def root():
-    return {"message": "MindMotion Engine is Online and Ready!"}
+    if (generateBtn) {
+        generateBtn.addEventListener('click', async () => {
+            const script = scriptInput.value;
+            const format = document.querySelector('#format-selector').value;
 
-# THE HANDSHAKE: Allows haseeb0127.github.io to talk to Railway
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"], 
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+            if (!script) {
+                alert("Please enter a script first!");
+                return;
+            }
 
-jobs = {}
+            // 1. Initial UI feedback
+            statusText.innerText = "🚀 Sending to MindMotion Swarm...";
+            generateBtn.disabled = true;
 
-class VideoRequest(BaseModel):
-    script: str
-    format: str
+            try {
+                // 2. Trigger the Backend
+                const response = await fetch(`${BACKEND_URL}/generate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ script, format })
+                });
 
-async def process_chunk(chunk_id):
-    """Simulates the Swarm rendering"""
-    await asyncio.sleep(2) 
-    return f"chunk_{chunk_id}.mp4"
+                const data = await response.json();
+                
+                // 3. Update the UI based on your FastAPI return message
+                if (data.status === "Processing Started") {
+                    statusText.innerText = "⚙️ " + data.message;
+                    
+                    // Note: In a real production app, we would now start 
+                    // checking a /status endpoint to see when it's done.
+                    simulateProgress(statusText);
+                }
+            } catch (error) {
+                statusText.innerText = "❌ Connection Error. Is Railway awake?";
+                generateBtn.disabled = false;
+            }
+        });
+    }
 
-async def generate_30_min_video(job_id: str, request: VideoRequest):
-    jobs[job_id] = "Slicing Script..."
-    await asyncio.sleep(1)
-    jobs[job_id] = "Swarm Rendering..."
-    tasks = [process_chunk(i) for i in range(5)]
-    await asyncio.gather(*tasks)
-    jobs[job_id] = "Completed"
-
-@app.post("/generate")
-async def start_engine(request: VideoRequest, background_tasks: BackgroundTasks):
-    job_id = str(uuid.uuid4())
-    jobs[job_id] = "Started"
-    background_tasks.add_task(generate_30_min_video, job_id, request)
-    return {"job_id": job_id}
-
-@app.get("/status/{job_id}")
-async def get_status(job_id: str):
-    return {"status": jobs.get(job_id, "Not Found")}
+    function simulateProgress(element) {
+        let seconds = 0;
+        const interval = setInterval(() => {
+            seconds += 2;
+            element.innerText = `⚡ Swarm is rendering... (${seconds}s elapsed)`;
+            if (seconds >= 10) { 
+                clearInterval(interval);
+                element.innerHTML = `✅ Video Ready! <br><br> <a href="#" class="download-btn">📥 Download MP4</a>`;
+            }
+        }, 2000);
+    }
+});
