@@ -8,7 +8,44 @@ document.addEventListener('DOMContentLoaded', () => {
     const previewBox = document.getElementById('video-preview-box');
     const previewPlayer = document.getElementById('preview-player');
     const downloadBtnLink = document.getElementById('download-btn');
+// Replace your entire pollInterval block with this:
+const pollInterval = setInterval(async () => {
+    try {
+        const statusRes = await fetch(`${BASE_URL}/status/${job_id}`);
+        const statusData = await statusRes.json();
+        
+        // Show the user the live attempt count
+        const attemptLabel = statusData.attempts > 0 ? ` (Retry #${statusData.attempts})` : "";
+        
+        if (statusData.status.includes("Attempt") || statusData.status.includes("Queue Full")) {
+            statusDisplay.innerHTML = `
+                <div style="color: #ff9800; font-weight: bold;">
+                    Status: ${statusData.status}
+                </div>
+                <div style="font-size: 11px; margin-top: 5px;">
+                    Server is searching for a free GPU slot. This can take 2-4 minutes.
+                </div>
+            `;
+            // Subtle "Breathing" animation for the progress bar
+            progressBar.style.width = '45%';
+            progressBar.style.opacity = (Math.sin(Date.now() / 500) * 0.2) + 0.8;
+        } else {
+            statusDisplay.innerText = `Status: ${statusData.status}`;
+            progressBar.style.opacity = '1';
+        }
 
+        if (statusData.status === "Completed") {
+            clearInterval(pollInterval);
+            finalizeVideo(statusData.url); 
+        }
+        
+        if (statusData.status.includes("All engines busy")) {
+            clearInterval(pollInterval);
+            generateBtn.disabled = false;
+        }
+
+    } catch (e) { console.error("Polling error", e); }
+}, 4000);
     // YOUR ACTUAL RAILWAY BACKEND URL
     const BASE_URL = "https://mindmotion-site-production.up.railway.app"; 
 
