@@ -1,71 +1,87 @@
-document.getElementById('generate-btn').addEventListener('click', function() {
-    const script = document.getElementById('script-input').value;
-    if (!script) {
-        alert("Please enter a script or notes first!");
-        return;
-    }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindMotion.app | AI Video Swarm</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
 
-    // UI Elements
-    const btn = this;
-    const progressContainer = document.getElementById('progress-container');
-    const progressBar = document.getElementById('progress-bar');
-    const status = document.getElementById('status-display');
-    const consoleBox = document.getElementById('engine-console');
-    const previewBox = document.getElementById('video-preview-box');
+    <section class="tools-grid">
+        <div class="card">
+            <div class="card-icon">🧠</div>
+            <h3>Focus Flow</h3>
+            <p>Curated soundscapes to help you enter deep work states faster.</p>
+            <a href="#" class="btn-sm">Try it now</a>
+        </div>
+    </section>
 
-    // 1. Reset and Show Progress
-    btn.disabled = true;
-    progressContainer.style.display = 'block';
-    progressBar.style.width = '0%';
-    status.innerText = "Initializing Swarm Engine...";
-    
-    let progress = 0;
-    const logs = [
-        "> Analyzing Psychology Script...",
-        "> Extracting key semantic nodes...",
-        "> Synchronizing Character: Guard HQ Bhaiya...",
-        "> Rendering video frames via Swarm...",
-        "> Applying brand overlays...",
-        "> Finalizing MP4 Export..."
-    ];
+    <div class="container">
+        <header>
+            <h1>MindMotion <span class="accent">AI</span></h1>
+            <p class="subtitle">Generate high-speed branded videos using the Swarm Engine.</p>
+        </header>
 
-    // 2. Simulate Generation Process
-    const interval = setInterval(() => {
-        progress += Math.random() * 15;
-        if (progress > 100) progress = 100;
-        
-        progressBar.style.width = progress + '%';
-        
-        // Update Console Logs randomly
-        if (Math.random() > 0.7) {
-            const randomLog = logs[Math.floor(Math.random() * logs.length)];
-            consoleBox.innerHTML += `<br> ${randomLog}`;
-            consoleBox.scrollTop = consoleBox.scrollHeight;
-        }
+        <main>
+            <textarea id="script-input" placeholder="Paste your MA Psychology notes or script here..."></textarea>
 
-        if (progress === 100) {
-            clearInterval(interval);
-            completeGeneration();
-        }
-    }, 400);
+            <div class="controls">
+                <select id="format-selector">
+                    <option value="16:9">YouTube (16:9)</option>
+                    <option value="9:16">Reels/TikTok (9:16)</option>
+                    <option value="1:1">Instagram (1:1)</option>
+                </select>
+                <button id="generate-btn">Generate Branded Video</button>
+            </div>
 
-    function completeGeneration() {
-        status.innerText = "✅ Video Generated Successfully!";
-        btn.disabled = false;
-        previewBox.style.display = 'block';
-        document.getElementById('share-hub').style.display = 'block';
-        
-        // Add to History
-        const historyList = document.getElementById('history-list');
-        const timestamp = new Date().toLocaleTimeString();
-        const li = document.createElement('li');
-        li.style = "padding: 10px; border-bottom: 1px solid #eee; font-size: 12px;";
-        li.innerHTML = `<strong>${timestamp}</strong> - Psych Video (16:9) <a href="#" style="color:#008080; float:right;">Download</a>`;
-        historyList.prepend(li);
-    }
-});
+            <div class="pro-settings">
+                <h5>💎 Pro Studio Tools</h5>
+                
+                <label>Character Consistency Profile:</label>
+                <select id="char-lock">
+                    <option value="guard_hq">Guard HQ Bhaiya (Active)</option>
+                    <option value="psych_student">MA Psychology Student</option>
+                    <option value="custom">Upload New Character...</option>
+                </select>
 
-// Clear History Logic
-document.getElementById('clear-history').addEventListener('click', () => {
-    document.getElementById('history-list').innerHTML = '';
-});
+                <div class="btn-group">
+                    <button id="storyboard-btn" class="secondary-btn">📝 Open Storyboard</button>
+                    <button id="edit-elements-btn" class="secondary-btn">🎨 Edit Elements</button>
+                </div>
+            </div>
+
+            <div id="progress-container">
+                <div id="progress-bar"></div>
+            </div>
+
+            <div id="status-container">
+                <p id="status-display">System Ready. Waiting for script...</p>
+            </div>
+
+            <div id="video-preview-box">
+                <h3>🎬 Instant Preview</h3>
+                <video id="preview-player" controls>
+                    <source src="" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+
+            <div id="share-hub">
+                <p>📢 Share your Psychology Insight:</p>
+                <div class="share-buttons">
+                    <a id="share-whatsapp" href="#" class="share-btn wa">WhatsApp</a>
+                    <a id="share-twitter" href="#" class="share-btn x">Twitter/X</a>
+                    <button id="copy-link-btn" class="share-btn copy">🔗 Copy Link</button>
+                </div>
+            </div>
+
+            <div id="engine-console">
+                > Initializing MindMotion Console...<br>
+                > Swarm Engine Standby...
+            </div>
+
+            <div id="history-container">
+                <div class="history-header">
+                    <h4>📜 Recent Videos</h4>
+                    <div class="history-
