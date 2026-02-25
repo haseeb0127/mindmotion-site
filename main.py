@@ -7,13 +7,8 @@ from pydantic import BaseModel
 
 app = FastAPI()
 
-# 1. THE ROOT CHECK (Ensures the 'Train' has arrived at the station)
-@app.get("/")
-async def root():
-    return {"message": "MindMotion Engine is Online and Ready!"}
-
-# 2. THE HANDSHAKE (CORS)
-# Allows your GitHub frontend to talk to this Railway backend
+# 1. THE GATEKEEPER (CORS)
+# Vital for haseeb0127.github.io to talk to Railway
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"], 
@@ -21,13 +16,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# This dictionary stores the status of your video jobs
+# This dictionary tracks the status of each video
 jobs = {}
 
 class VideoRequest(BaseModel):
     script: str
     format: str
     brand_name: str = "MindMotion.app"
+
+@app.get("/")
+async def root():
+    return {"message": "MindMotion Engine is Online and Ready!"}
 
 async def process_chunk(chunk_id, text, format):
     """Simulates a cloud GPU rendering one small part"""
@@ -37,7 +36,7 @@ async def process_chunk(chunk_id, text, format):
 
 async def generate_30_min_video(job_id: str, request: VideoRequest):
     # 1. THE SLICER
-    jobs[job_id] = "Slicing script into chunks..."
+    jobs[job_id] = "Slicing Script into chunks..."
     words = request.script.split()
     chunks = [words[i:i + 150] for i in range(0, len(words), 150)] 
     
@@ -64,7 +63,6 @@ async def start_engine(request: VideoRequest, background_tasks: BackgroundTasks)
         "message": "The Swarm is rendering your video."
     }
 
-# 3. THE STATUS CHECKER
 @app.get("/status/{job_id}")
 async def get_status(job_id: str):
     return {"status": jobs.get(job_id, "Not Found")}
