@@ -8,17 +8,19 @@ document.addEventListener('DOMContentLoaded', () => {
     if (generateBtn) {
         generateBtn.addEventListener('click', async () => {
             const script = scriptInput.value;
-            const format = "16:9"; // You can link this to a dropdown later
+            const format = "16:9"; 
 
             if (!script) {
                 alert("Asif, please enter a script first!");
                 return;
             }
 
+            // 1. Initial UI feedback
             statusText.innerText = "🚀 Sending to MindMotion Engine...";
             generateBtn.disabled = true;
 
             try {
+                // 2. Trigger the Backend
                 const response = await fetch(`${BACKEND_URL}/generate`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -29,10 +31,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 if (data.job_id) {
                     statusText.innerText = "⚙️ The Swarm is rendering...";
+                    // 3. Start checking the status every 3 seconds
                     checkStatus(data.job_id);
                 }
             } catch (error) {
-                statusText.innerText = "❌ Connection Error. Is Railway awake?";
+                statusText.innerText = "❌ Connection Error. Check Railway Logs.";
                 generateBtn.disabled = false;
             }
         });
@@ -46,24 +49,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 statusText.innerText = "📊 Status: " + data.status;
 
+                // 4. When the Swarm finishes...
                 if (data.status === "Completed") {
                     clearInterval(interval);
+                    
+                    // Reveal the Download Button
                     statusText.innerHTML = `
-                        <div style="margin-top: 20px;">
-                            <p>✅ Video Ready!</p>
-                            <a href="#" id="download-link" class="download-button" style="padding: 10px 20px; background: #008080; color: white; text-decoration: none; border-radius: 5px;">
-                                📥 Download Branded Video
+                        <div style="margin-top: 20px; border: 2px solid #008080; padding: 15px; border-radius: 8px;">
+                            <p style="color: #008080; font-weight: bold;">✅ Video Ready for Social Media!</p>
+                            <a href="#" class="download-btn" style="background: #008080; color: white; padding: 10px 25px; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 10px;">
+                                📥 Download Branded MP4
                             </a>
                         </div>
                     `;
                     generateBtn.disabled = false;
-                    
-                    // Add an alert for the user
-                    alert("Your MindMotion video is ready for social media!");
+                    alert("Your MindMotion video is ready!");
                 }
             } catch (err) {
                 console.log("Polling error:", err);
             }
-        }, 3000); // Checks every 3 seconds
+        }, 3000); 
     }
 });
