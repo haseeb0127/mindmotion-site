@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const progressBar = document.querySelector('#progress-bar');
     const progressContainer = document.querySelector('#progress-container');
 
-    // 1. CONSOLE UPDATER
+    // 1. THE CONSOLE LOGIC
     function updateConsole(msg) {
         const consoleBox = document.querySelector('#engine-console');
         if (consoleBox) {
@@ -17,43 +17,49 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // 2. THE MAIN ACTION FUNCTION
+    async function startEngineFlow() {
+        const script = scriptInput.value;
+        const format = document.querySelector('#format-selector').value;
+
+        if (!script) {
+            alert("Asif, please enter your Psychology notes first!");
+            return;
+        }
+
+        // UI Reset & Feedback
+        statusText.innerText = "🚀 Connecting to Swarm...";
+        updateConsole("System Override: Manual Start Initiated.");
+        updateConsole("Handshaking with Railway Cluster...");
+        
+        generateBtn.disabled = true;
+        progressContainer.style.display = "block";
+        progressBar.style.width = "5%";
+
+        try {
+            // TRIGGER GENERATION
+            const response = await fetch(`${BACKEND_URL}/generate`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ script, format })
+            });
+
+            const data = await response.json();
+            
+            if (data.job_id) {
+                updateConsole(`Job ID Created: ${data.job_id}`);
+                pollStatus(data.job_id);
+            }
+        } catch (error) {
+            statusText.innerText = "❌ Connection Error. Is Railway awake?";
+            updateConsole("ERROR: Failed to reach the Swarm engine.");
+            generateBtn.disabled = false;
+        }
+    }
+
+    // Connect the button to the function
     if (generateBtn) {
-        generateBtn.addEventListener('click', async () => {
-            const script = scriptInput.value;
-            const format = document.querySelector('#format-selector').value;
-
-            if (!script) {
-                alert("Asif, please enter a script first!");
-                return;
-            }
-
-            // UI Reset
-            statusText.innerText = "🚀 Connecting to Swarm...";
-            updateConsole("Handshaking with Railway Cluster...");
-            generateBtn.disabled = true;
-            progressContainer.style.display = "block";
-            progressBar.style.width = "5%";
-
-            try {
-                // 2. TRIGGER GENERATION
-                const response = await fetch(`${BACKEND_URL}/generate`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ script, format })
-                });
-
-                const data = await response.json();
-                
-                if (data.job_id) {
-                    updateConsole(`Job ID Created: ${data.job_id}`);
-                    pollStatus(data.job_id);
-                }
-            } catch (error) {
-                statusText.innerText = "❌ Connection Error. Is Railway awake?";
-                updateConsole("ERROR: Failed to reach the Swarm engine.");
-                generateBtn.disabled = false;
-            }
-        });
+        generateBtn.onclick = startEngineFlow;
     }
 
     // 3. STATUS POLLING
@@ -66,13 +72,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 const res = await fetch(`${BACKEND_URL}/status/${jobId}`);
                 const data = await res.json();
 
-                // Console logging for status changes
                 if (data.status !== lastStatus) {
                     updateConsole(`System Update: ${data.status}`);
                     lastStatus = data.status;
                 }
 
-                // Bar movement logic
                 if (data.status.includes("Slicing")) {
                     progress = 25;
                 } else if (data.status.includes("Rendering")) {
@@ -83,7 +87,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     progress = 100;
                     clearInterval(interval);
                     
-                    // THE FINAL DOWNLOAD LINK
                     statusText.innerHTML = `
                         <div style="color: #008080; font-weight: bold; margin-top: 10px;">
                             ✅ Video Ready for Social Media! <br>
