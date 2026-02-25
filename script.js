@@ -6,6 +6,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const scriptInput = document.querySelector('#script-input');
     const progressBar = document.querySelector('#progress-bar');
     const progressContainer = document.querySelector('#progress-container');
+    const previewBox = document.getElementById('video-preview-box');
+    const previewPlayer = document.getElementById('preview-player');
 
     // 1. THE CONSOLE LOGIC
     function updateConsole(msg) {
@@ -27,17 +29,17 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // UI Reset & Feedback
+        // UI Reset
         statusText.innerText = "🚀 Connecting to Swarm...";
         updateConsole("System Override: Manual Start Initiated.");
         updateConsole("Handshaking with Railway Cluster...");
+        if (previewBox) previewBox.style.display = "none"; // Hide old previews
         
         generateBtn.disabled = true;
         progressContainer.style.display = "block";
         progressBar.style.width = "5%";
 
         try {
-            // TRIGGER GENERATION
             const response = await fetch(`${BACKEND_URL}/generate`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -51,13 +53,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 pollStatus(data.job_id);
             }
         } catch (error) {
-            statusText.innerText = "❌ Connection Error. Is Railway awake?";
+            statusText.innerText = "❌ Connection Error!";
             updateConsole("ERROR: Failed to reach the Swarm engine.");
             generateBtn.disabled = false;
         }
     }
 
-    // Connect the button to the function
     if (generateBtn) {
         generateBtn.onclick = startEngineFlow;
     }
@@ -77,16 +78,22 @@ document.addEventListener('DOMContentLoaded', () => {
                     lastStatus = data.status;
                 }
 
-                if (data.status.includes("Slicing")) {
-                    progress = 25;
-                } else if (data.status.includes("Rendering")) {
-                    progress = 65;
-                } else if (data.status.includes("Stitching")) {
-                    progress = 90;
-                } else if (data.status === "Completed") {
+                if (data.status.includes("Slicing")) progress = 25;
+                else if (data.status.includes("Rendering")) progress = 65;
+                else if (data.status.includes("Stitching")) progress = 90;
+                else if (data.status === "Completed") {
                     progress = 100;
                     clearInterval(interval);
                     
+                    // --- THE FEATURE UPGRADE ---
+                    // Show the preview window and load the video
+                    if (previewBox && previewPlayer) {
+                        previewBox.style.display = "block";
+                        previewPlayer.src = `${BACKEND_URL}/download/${jobId}`;
+                        previewPlayer.load(); 
+                        updateConsole("Visual Preview Generated.");
+                    }
+
                     statusText.innerHTML = `
                         <div style="color: #008080; font-weight: bold; margin-top: 10px;">
                             ✅ Video Ready for Social Media! <br>
