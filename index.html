@@ -1,7 +1,3 @@
-<div id="progress-container" style="display: none; width: 100%; background: #e0e0e0; border-radius: 10px; margin: 20px 0;">
-    <div id="progress-bar" style="width: 0%; height: 20px; background: #008080; border-radius: 10px; transition: width 0.5s ease;"></div>
-</div>
-<p id="status-display">System Ready. Waiting for script...</p>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -28,8 +24,17 @@
             <button id="generate-btn">Generate Branded Video</button>
         </div>
 
+        <div id="progress-container" style="display: none; width: 100%; background: #e0e0e0; border-radius: 10px; margin: 20px 0;">
+            <div id="progress-bar" style="width: 0%; height: 20px; background: #008080; border-radius: 10px; transition: width 0.5s ease;"></div>
+        </div>
+
         <div id="status-container">
             <p id="status-display">System Ready. Waiting for script...</p>
+        </div>
+
+        <div id="engine-console" style="background: #1e1e1e; color: #00ff00; padding: 15px; font-family: monospace; height: 120px; overflow-y: auto; border-radius: 5px; margin-top: 20px; font-size: 12px; text-align: left; line-height: 1.5;">
+            > Initializing MindMotion Console...<br>
+            > Swarm Engine Standby...
         </div>
     </div>
 
