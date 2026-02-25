@@ -12,7 +12,7 @@
         <h1>MindMotion AI</h1>
         <p>Generate high-speed branded videos using the Swarm Engine.</p>
 
-        <textarea id="script-input" placeholder="Paste your 30-minute script here..."></textarea>
+        <textarea id="script-input" placeholder="Paste your MA Psychology notes or 30-min script here..."></textarea>
 
         <div class="controls">
             <select id="format-selector">
@@ -24,15 +24,23 @@
             <button id="generate-btn">Generate Branded Video</button>
         </div>
 
-        <div id="progress-container" style="display: none; width: 100%; background: #e0e0e0; border-radius: 10px; margin: 20px 0;">
+        <div id="progress-container" style="display: none; width: 100%; background: #f0f0f0; border-radius: 10px; margin: 20px 0;">
             <div id="progress-bar" style="width: 0%; height: 20px; background: #008080; border-radius: 10px; transition: width 0.5s ease;"></div>
+        </div>
+
+        <div id="video-preview-box" style="display:none; margin-top: 20px; text-align: center;">
+            <h3 style="color: #008080;">🎬 Instant Preview</h3>
+            <video id="preview-player" width="100%" controls style="border-radius: 10px; border: 3px solid #008080; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                <source src="" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
         </div>
 
         <div id="status-container">
             <p id="status-display">System Ready. Waiting for script...</p>
         </div>
 
-        <div id="engine-console" style="background: #1e1e1e; color: #00ff00; padding: 15px; font-family: monospace; height: 120px; overflow-y: auto; border-radius: 5px; margin-top: 20px; font-size: 12px; text-align: left; line-height: 1.5;">
+        <div id="engine-console" style="background: #1e1e1e; color: #00ff00; padding: 15px; font-family: monospace; height: 120px; overflow-y: auto; border-radius: 5px; margin-top: 20px; font-size: 12px; text-align: left; line-height: 1.5; border-left: 4px solid #008080;">
             > Initializing MindMotion Console...<br>
             > Swarm Engine Standby...
         </div>
